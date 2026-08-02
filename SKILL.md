@@ -50,6 +50,38 @@ python driver.py @handle --no-cluster --since 2026-01-01
 | `--scrolls N` / `--topics N` | How deep and how wide the research goes. Each costs real time. |
 | `--since YYYY-MM-DD` | Ignore older posts. |
 | `--narrative FILE` | JSON of written commentary to fold into the report — see below. |
+| `--cookies FILE` | A signed-in session, for accounts with audience controls on. |
+
+## Accounts you cannot read signed out
+
+Some creators switch on **audience controls**, which makes TikTok serve their
+profile to signed-in visitors only. Follower counts render as `-`, the video
+grid is empty, and yt-dlp fails with `Unable to extract secondary user ID`.
+This is a permission, not a bot check — no amount of stealth gets past it, and
+the tool now detects it and says so rather than reporting the account as
+private.
+
+The fix is a signed-in session, supplied as a cookies.txt file:
+
+```bash
+python driver.py --help-session
+python driver.py @handle --cookies /path/to/cookies.txt
+python driver.py --doctor
+```
+
+The file is used by yt-dlp for the fast path and imported into camofox via
+`POST /sessions/:userId/cookies` for the browser path, so both tiers are signed
+in. Saved at `~/.tiktok-content-analysis/tiktok-cookies.txt` it is picked up
+without the flag.
+
+**Never log a user in and never ask for a password.** They export a session
+from their own browser; this tool only ever reads a file that already exists,
+and never prints a cookie value — the doctor reports names, counts and expiry
+only. Tell them to use a throwaway account: the file is a credential, and
+automated reading can get an account rate-limited.
+
+Expired sessions are detected and reported as expired, which matters because
+the failure mode otherwise looks identical to a private account.
 
 ## What the report contains
 

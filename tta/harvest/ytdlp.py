@@ -46,14 +46,16 @@ def _entry_to_row(entry: dict, handle: str) -> dict:
     }
 
 
-def _enumerate(handle: str, cap: int) -> tuple[dict, dict]:
+def _enumerate(handle: str, cap: int, cookies: str | None = None) -> tuple[dict, dict]:
     import yt_dlp
+    from . import session
     opts = {
         "extract_flat": "in_playlist",
         "quiet": True,
         "no_warnings": True,
         "playlistend": cap,
         "ignoreerrors": True,
+        **session.ytdlp_opts(cookies),
     }
     with yt_dlp.YoutubeDL(opts) as y:
         info = y.extract_info(f"https://www.tiktok.com/@{handle}", download=False) or {}
@@ -77,7 +79,8 @@ def _profile_from(info: dict) -> dict:
 
 
 def pull(conn, handle: str, *, cap: int = DEFAULT_CAP, attempts: int = DEFAULT_ATTEMPTS,
-         since: date | None = None, log=print) -> dict:
+         since: date | None = None, cookies: str | None = None,
+         log=print) -> dict:
     """Enumerate and store one account. Returns a summary dict.
 
     Raises HarvestBlocked when nothing at all came back, which is the caller's
@@ -93,7 +96,7 @@ def pull(conn, handle: str, *, cap: int = DEFAULT_CAP, attempts: int = DEFAULT_A
         log(f"  pass {attempt}/{attempts}: enumerating @{handle} (cap {cap})...")
         started = time.time()
         try:
-            entries, this_info = _enumerate(handle, cap)
+            entries, this_info = _enumerate(handle, cap, cookies)
         except Exception as exc:                 # network, throttle, private account
             last_error = exc
             log(f"    failed: {type(exc).__name__}: {exc}")

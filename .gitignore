@@ -8,3 +8,7 @@ __pycache__/
 # TTA_HOME at the repo:
 reports/
 *.sqlite3
+
+# A cookie file is a credential. Never commit one.
+*cookies*.txt
+*cookies*.json

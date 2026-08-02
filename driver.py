@@ -34,7 +34,7 @@ from tta import __version__, attribution, console, paths, store          # noqa:
 from tta.analyse import (aggregates as ag, cadence, hooks, profile_audit,  # noqa: E402
                          themes)
 from tta.calendar import build as calbuild, recommend, workbook                     # noqa: E402
-from tta.harvest import camofox, ytdlp                                   # noqa: E402
+from tta.harvest import camofox, session, ytdlp                                   # noqa: E402
 from tta.report import html as rhtml, pdf                                # noqa: E402
 from tta.research import last30days, tiktok_demand                       # noqa: E402
 
@@ -87,6 +87,13 @@ def doctor() -> int:
                  "Optional. Needed for follower counts, the profile audit and "
                  "niche research. Install the camofox-browser skill (Node 18+), "
                  "then start it with: camofox start"))
+
+    sess = session.status()
+    rows.append(("Signed-in TikTok session", sess["usable"], False,
+                 sess["note"],
+                 "Optional. Only needed for accounts that have audience "
+                 "controls switched on. Run with --help-session for how to "
+                 "set one up."))
 
     rows.append(("last30days skill", last30days.available(), False,
                  "installed" if last30days.available() else "not installed",
@@ -144,7 +151,7 @@ def harvest(conn, handle: str, args) -> dict:
     banner("1/6  Reading the public catalogue")
     try:
         summary = ytdlp.pull(conn, handle, cap=args.cap, attempts=args.attempts,
-                             since=args.since)
+                             since=args.since, cookies=args.cookies)
         print(f"  {summary['stored']} videos stored "
               f"({summary['new']} new, {summary['already_had']} already held)")
         return summary
@@ -152,6 +159,8 @@ def harvest(conn, handle: str, args) -> dict:
         print(f"  {exc}")
 
     print("  falling back to the stealth browser...")
+    if camofox.healthy():
+        session.import_into_camofox(args.cookies, log=lambda m: print(m))
     if not camofox.healthy():
         print("  camofox is not running either.")
         from tta.harvest import chrome_handoff
@@ -403,6 +412,8 @@ def main(argv: list[str]) -> int:
         prog="driver.py",
         description="Analyse a public TikTok account and build a 30-day content calendar.")
     ap.add_argument("handle", nargs="?", help="e.g. @someone, or a profile URL")
+    ap.add_argument("--help-session", action="store_true",
+                    help="explain how to set up a signed-in session")
     ap.add_argument("--doctor", action="store_true",
                     help="check what is installed and what is missing")
     ap.add_argument("--cap", type=int, default=ytdlp.DEFAULT_CAP,
@@ -421,11 +432,20 @@ def main(argv: list[str]) -> int:
                     help="skip the niche research step entirely")
     ap.add_argument("--no-profile", action="store_true",
                     help="skip the camofox profile read")
+    ap.add_argument("--cookies", metavar="FILE",
+                    help="Netscape cookies.txt for a signed-in TikTok session; "
+                         "needed for accounts with audience controls on")
     ap.add_argument("--no-open", action="store_true",
                     help="do not open the report when finished")
     ap.add_argument("--narrative", metavar="FILE",
                     help="JSON of written commentary to fold into the report")
     args = ap.parse_args(argv[1:])
+
+    if args.help_session:
+        print()
+        print(session.HOW_TO)
+        print()
+        return 0
 
     if args.doctor:
         return doctor()
