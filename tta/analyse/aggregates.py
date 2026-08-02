@@ -19,7 +19,7 @@ import statistics as st
 from collections import defaultdict
 from datetime import datetime
 
-from ..stats import welch_verdict
+from ..stats import posts_needed, welch_verdict
 
 #: Short-form duration buckets. Anything past a minute is "long" on TikTok.
 DURATION_BUCKETS = [
@@ -134,6 +134,9 @@ def split(videos: list[dict], keyfn, *, label: str, min_n: int = 3,
         ids = {m["video_id"] for m in members}
         rest = [v.get("views") or 0 for v in videos if v["video_id"] not in ids]
         p, verdict = welch_verdict(mine, rest)
+        # For anything undecided, work out what would decide it. A verdict that
+        # only says "unknown" gives the reader nowhere to go.
+        need = posts_needed(mine, rest) if verdict == "too early to tell" else None
         avg = round(sum(mine) / len(mine))
         rows.append({
             "name": name,
@@ -145,6 +148,7 @@ def split(videos: list[dict], keyfn, *, label: str, min_n: int = 3,
             "delta": round((avg / overall_avg - 1) * 100) if overall_avg else 0,
             "p": p,
             "verdict": verdict,
+            "needs": need,
             "dimension": label,
         })
 

@@ -80,14 +80,30 @@ def _fmt(n) -> str:
 
 # ------------------------------------------------------------------------- donut
 
-def donut(rows: list[dict], *, title: str, value_key: str = "n",
-          label_key: str = "name", width: int = 640, height: int = 300) -> str:
-    """Part-to-whole for the content mix.
+def _shade(hex_colour: str, factor: float) -> str:
+    """Darken (factor<1) or lighten (factor>1) a hex colour."""
+    h = hex_colour.lstrip("#")
+    rgb = [int(h[i:i + 2], 16) for i in (0, 2, 4)]
+    out = [max(0, min(255, int(c * factor))) for c in rgb]
+    return "#%02X%02X%02X" % tuple(out)
 
-    Capped at six slices with the tail folded into "Other" — beyond that,
-    neighbouring wedges become impossible to tell apart and the reader is
-    better served by the table. Every slice is directly labelled with its
-    percentage, which also satisfies the contrast relief the palette needs.
+
+def donut(rows: list[dict], *, title: str, value_key: str = "n",
+          label_key: str = "name", width: int = 640, height: int = 330,
+          depth: int = 26, tilt: float = 0.52) -> str:
+    """Part-to-whole for the content mix, drawn as a 3D pie.
+
+    The pie is projected onto an ellipse (y squashed by `tilt`) and given an
+    extruded side wall in a darker shade of each slice's hue. Slices are drawn
+    back-to-front so the walls occlude correctly, and only the front half of
+    the rim gets a wall — that is the only part a viewer could see.
+
+    Worth being straight about the trade: perspective makes near slices look
+    larger than far ones of the same size, so a 3D pie is a worse instrument
+    for comparing angles than a flat one. That is bought back by labelling
+    every slice with its exact percentage and repeating the full figures in
+    the legend and the table below, so nothing here depends on judging an
+    angle by eye.
     """
     rows = [r for r in rows if (r.get(value_key) or 0) > 0]
     if not rows:
@@ -100,57 +116,101 @@ def donut(rows: list[dict], *, title: str, value_key: str = "n",
                         "verdict": "too early to tell"}]
 
     total = sum(r.get(value_key) or 0 for r in rows) or 1
-    cx, cy = 150, height / 2 + 6
-    r_out, r_in = 96, 56
-    parts = [f'<svg viewBox="0 0 {width} {height}" width="100%" role="img" '
-             f'aria-label="{esc(title)}" xmlns="http://www.w3.org/2000/svg">', _defs()]
+    rx, ry = 108, 108 * tilt
+    # Fit the frame to whichever is taller, the disc or the legend. A fixed
+    # height leaves a band of dead space under a five-slice pie.
+    legend_h = 44 + len(rows) * 23
+    disc_h = int(2 * ry + depth + 46)
+    height = max(180, legend_h + 16, disc_h)
+    cx, cy = 158, ry + 26
 
+    def pt(angle: float, scale: float = 1.0, dy: float = 0.0):
+        return (cx + rx * scale * math.cos(angle),
+                cy + ry * scale * math.sin(angle) + dy)
+
+    # Slice geometry first, so the walls can be drawn in depth order.
+    slices = []
     angle = -math.pi / 2
-    legend_y = 34
     for i, row in enumerate(rows):
         value = row.get(value_key) or 0
         frac = value / total
         sweep = frac * 2 * math.pi
-        end = angle + sweep
-        colour = series_color(i)
-        proven = row.get("verdict") in PROVEN
+        slices.append({
+            "row": row, "i": i, "value": value, "frac": frac,
+            "a0": angle, "a1": angle + sweep,
+            "mid": angle + sweep / 2,
+            "colour": series_color(i),
+            "proven": row.get("verdict") in PROVEN,
+        })
+        angle += sweep
 
-        # 2px surface gap between adjacent fills
-        gap = min(0.02, sweep * 0.04)
-        a0, a1 = angle + gap / 2, end - gap / 2
+    parts = [f'<svg viewBox="0 0 {width} {height}" width="100%" role="img" '
+             f'aria-label="{esc(title)}" xmlns="http://www.w3.org/2000/svg">']
+
+    # Ground shadow, so the disc sits on the page rather than floating.
+    parts.append(
+        f'<ellipse cx="{cx}" cy="{cy + depth + 5}" rx="{rx * 0.98:.1f}" '
+        f'ry="{ry * 0.92:.1f}" fill="{INK}" opacity="0.07"/>')
+
+    # --- side walls, far slices first -------------------------------------
+    # Only the front semicircle (sin > 0) has a visible wall.
+    for s in sorted(slices, key=lambda s: math.sin(s["mid"])):
+        a0 = max(s["a0"], 0.0) if s["a1"] > 0 else s["a0"]
+        lo, hi = s["a0"], s["a1"]
+        # clip the arc to the front half, handling wraparound
+        segments = []
+        for start, end in ((lo, hi), (lo + 2 * math.pi, hi + 2 * math.pi)):
+            seg_lo, seg_hi = max(start, 0.0), min(end, math.pi)
+            if seg_hi > seg_lo:
+                segments.append((seg_lo, seg_hi))
+        for seg_lo, seg_hi in segments:
+            x0, y0 = pt(seg_lo)
+            x1, y1 = pt(seg_hi)
+            large = 1 if (seg_hi - seg_lo) > math.pi else 0
+            wall = (f"M {x0:.2f} {y0:.2f} "
+                    f"A {rx} {ry} 0 {large} 1 {x1:.2f} {y1:.2f} "
+                    f"L {x1:.2f} {y1 + depth:.2f} "
+                    f"A {rx} {ry} 0 {large} 0 {x0:.2f} {y0 + depth:.2f} Z")
+            fill = _shade(s["colour"], 0.62)
+            opacity = "" if s["proven"] else ' fill-opacity="0.45"'
+            parts.append(f'<path d="{wall}" fill="{fill}"{opacity}/>')
+
+    # --- top faces ---------------------------------------------------------
+    for s in slices:
+        gap = min(0.018, (s["a1"] - s["a0"]) * 0.04)
+        a0, a1 = s["a0"] + gap / 2, s["a1"] - gap / 2
+        x0, y0 = pt(a0)
+        x1, y1 = pt(a1)
         large = 1 if (a1 - a0) > math.pi else 0
-        x0, y0 = cx + r_out * math.cos(a0), cy + r_out * math.sin(a0)
-        x1, y1 = cx + r_out * math.cos(a1), cy + r_out * math.sin(a1)
-        xi1, yi1 = cx + r_in * math.cos(a1), cy + r_in * math.sin(a1)
-        xi0, yi0 = cx + r_in * math.cos(a0), cy + r_in * math.sin(a0)
-        path = (f"M {x0:.2f} {y0:.2f} A {r_out} {r_out} 0 {large} 1 {x1:.2f} {y1:.2f} "
-                f"L {xi1:.2f} {yi1:.2f} A {r_in} {r_in} 0 {large} 0 {xi0:.2f} {yi0:.2f} Z")
-        parts.append(f'<path d="{path}"{_mark(colour, proven)}/>')
+        top = (f"M {cx:.2f} {cy:.2f} L {x0:.2f} {y0:.2f} "
+               f"A {rx} {ry} 0 {large} 1 {x1:.2f} {y1:.2f} Z")
+        parts.append(f'<path d="{top}"{_mark(s["colour"], s["proven"])}/>')
 
-        # direct label on the slice when it is big enough to hold one
-        if frac > 0.06:
-            mid = (a0 + a1) / 2
-            lx, ly = cx + 76 * math.cos(mid), cy + 76 * math.sin(mid)
-            parts.append(
-                f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="middle" '
-                f'dominant-baseline="middle" font-size="11" font-weight="600" '
-                f'fill="{SURFACE}" style="paint-order:stroke;stroke:{colour};'
-                f'stroke-width:3px">{frac * 100:.0f}%</text>')
-
+    # --- direct labels -----------------------------------------------------
+    for s in slices:
+        if s["frac"] <= 0.05:
+            continue
+        lx, ly = pt(s["mid"], 0.62)
         parts.append(
-            f'<rect x="306" y="{legend_y - 9}" width="11" height="11" rx="2"'
-            f'{_mark(colour, proven)}/>'
-            f'<text x="325" y="{legend_y}" font-size="12" fill="{INK}">'
-            f'{esc(_clip(row.get(label_key), 42))}</text>'
-            f'<text x="{width - 12}" y="{legend_y}" font-size="12" text-anchor="end" '
-            f'fill="{INK_SOFT}">{value} · {frac * 100:.0f}%</text>')
-        legend_y += 22
-        angle = end
+            f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="middle" '
+            f'dominant-baseline="middle" font-size="12" font-weight="700" '
+            f'fill="#FFFFFF" style="paint-order:stroke;'
+            f'stroke:{_shade(s["colour"], 0.55)};stroke-width:3.5px">'
+            f'{s["frac"] * 100:.0f}%</text>')
 
-    parts.append(f'<text x="{cx}" y="{cy - 4}" text-anchor="middle" font-size="22" '
-                 f'font-weight="700" fill="{INK}">{total}</text>'
-                 f'<text x="{cx}" y="{cy + 14}" text-anchor="middle" font-size="11" '
-                 f'fill="{INK_SOFT}">posts</text>')
+    # --- legend ------------------------------------------------------------
+    legend_y = 44
+    for s in slices:
+        parts.append(
+            f'<rect x="300" y="{legend_y - 10}" width="12" height="12" rx="2.5"'
+            f'{_mark(s["colour"], s["proven"])}/>'
+            f'<text x="320" y="{legend_y}" font-size="12.5" fill="{INK}">'
+            f'{esc(_clip(s["row"].get(label_key), 40))}</text>'
+            f'<text x="{width - 12}" y="{legend_y}" font-size="12.5" '
+            f'text-anchor="end" fill="{INK_SOFT}">'
+            f'{s["value"]} · {s["frac"] * 100:.0f}%</text>')
+        legend_y += 23
+
     parts.append("</svg>")
     return _figure(title, "".join(parts))
 
@@ -282,9 +342,10 @@ def trend_line(rows: list[dict], *, title: str, x_key: str = "month",
     parts.append(f'<line x1="{pad_l}" y1="{py(avg):.1f}" x2="{width - pad_r}" '
                  f'y2="{py(avg):.1f}" stroke="{INK_SOFT}" stroke-width="1" '
                  f'stroke-dasharray="4 3"/>')
-    # Anchored left, not right: the right edge is where the final data point's
-    # own label sits, and the two collide there.
-    parts.append(f'<text x="{pad_l + 6}" y="{py(avg) - 5:.1f}" '
+    # Below the line, not above it. Point labels always sit above their marker,
+    # so anything above the baseline collides with whichever month happens to
+    # land near the average — which is, by definition, a likely month.
+    parts.append(f'<text x="{pad_l + 6}" y="{py(avg) + 12:.1f}" '
                  f'font-size="10" fill="{INK_SOFT}">average {_fmt(avg)}</text>')
 
     pts = " ".join(f"{px(i):.1f},{py(r[y_key]):.1f}" for i, r in enumerate(rows))

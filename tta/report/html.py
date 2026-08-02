@@ -29,15 +29,18 @@ from .charts import esc
 
 CSS = """
 :root {
-  --ink: #0B0B0B; --soft: #52514E; --muted: #7A7973;
-  --rule: #E5E4E0; --surface: #FCFCFB; --band: #F4F6F9;
+  --ink: #17150F; --soft: #4E4A40; --muted: #7C7669;
+  --rule: #E2DED2; --surface: #FBFAF6; --band: #F3F1E8;
+  --accent: #B4451F; --accent-soft: #F6E7DF;
   --pos: #2A78D6; --neg: #D03B3B; --good: #0CA30C; --warn: #B07800;
+  --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --text: "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
 }
 * { box-sizing: border-box; }
 html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 body {
   margin: 0; background: var(--surface); color: var(--ink);
-  font: 400 13px/1.55 "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font: 400 13px/1.6 var(--text);
 }
 @page { size: A4; margin: 14mm 13mm 16mm; }
 
@@ -51,38 +54,50 @@ body {
 .page { padding: 0 0 6mm; }
 .page + .page { break-before: page; padding-top: 2mm; }
 
-h1 { font-size: 30px; line-height: 1.15; margin: 0 0 6px; letter-spacing: -0.4px; }
-h2 { font-size: 17px; margin: 0 0 3px; letter-spacing: -0.2px; }
-h3 { font-size: 13px; margin: 18px 0 6px; text-transform: uppercase;
-     letter-spacing: 0.6px; color: var(--soft); }
-p  { margin: 0 0 9px; max-width: 68ch; }
-.sub { color: var(--soft); margin: 0 0 16px; font-size: 13px; }
-.lede { font-size: 14.5px; line-height: 1.6; }
+h1 { font-family: var(--display); font-size: 34px; font-weight: 600;
+     line-height: 1.1; margin: 0 0 8px; letter-spacing: -0.01em; }
+h2 { font-family: var(--display); font-size: 22px; font-weight: 600;
+     margin: 0 0 4px; letter-spacing: -0.01em; }
+/* Weight and size carry the hierarchy. An uppercase tracked eyebrow over
+   every subsection is grammar nobody chose. */
+h3 { font-size: 14px; font-weight: 700; margin: 22px 0 6px; color: var(--ink); }
+p  { margin: 0 0 10px; max-width: 68ch; }
+.sub { color: var(--soft); margin: 0 0 18px; font-size: 13.5px; }
+.lede { font-size: 15px; line-height: 1.65; }
 
-.rule { height: 1px; background: var(--rule); margin: 14px 0 16px; border: 0; }
+.rule { height: 1px; background: var(--rule); margin: 16px 0 18px; border: 0; }
 
 /* cover ------------------------------------------------------------------ */
-.cover { padding-top: 8mm; }
-.cover h1 { font-size: 38px; }
-.provenance { border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px;
-  margin: 20px 0; background: var(--band); }
-.provenance dl { display: grid; grid-template-columns: max-content 1fr;
-  gap: 5px 18px; margin: 0; font-size: 12.5px; }
-.provenance dt { color: var(--soft); }
-.provenance dd { margin: 0; font-weight: 600; }
-.notice { border-left: 3px solid var(--warn); padding: 10px 0 10px 13px;
-  margin: 18px 0; font-size: 12.5px; color: var(--soft); }
-.notice strong { color: var(--ink); }
+.cover { padding-top: 6mm; }
+.cover h1 { font-size: 46px; margin-bottom: 14px; }
+/* The opening figure is set as a sentence, not a stat card: this document
+   often has to tell someone their work is not yet measurable, and the first
+   thing it should do is count what they have already made. */
+.headline { font-family: var(--display); font-size: 26px; line-height: 1.35;
+  font-weight: 400; max-width: 24ch; margin: 0 0 22px; color: var(--ink); }
+.headline b { font-weight: 600; font-size: 44px; color: var(--accent);
+  font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+  display: block; line-height: 1; margin-bottom: 2px; }
 
-/* KPI row ---------------------------------------------------------------- */
-.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-  margin: 14px 0 18px; }
-.tile { border: 1px solid var(--rule); border-radius: 6px; padding: 11px 12px; }
-.tile .k { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.6px;
-  color: var(--muted); margin-bottom: 3px; }
-.tile .v { font-size: 21px; font-weight: 700; line-height: 1.1;
-  font-variant-numeric: tabular-nums; }
-.tile .n { font-size: 11px; color: var(--soft); margin-top: 2px; }
+.provenance { border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule);
+  padding: 12px 0; margin: 22px 0; }
+.provenance dl { display: grid; grid-template-columns: max-content 1fr;
+  gap: 6px 22px; margin: 0; font-size: 12.5px; }
+.provenance dt { color: var(--muted); }
+.provenance dd { margin: 0; font-weight: 600; }
+.notice { background: var(--accent-soft); border: 1px solid #EBD5C9;
+  border-radius: 3px; padding: 13px 15px; margin: 20px 0; font-size: 12.5px;
+  color: #6B3A24; }
+.notice strong { color: #4A2415; }
+
+/* figure run — inline, hairline-separated, not a grid of cards ----------- */
+.figures { display: flex; gap: 0; margin: 16px 0 20px;
+  border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule); }
+.fig { flex: 1; padding: 12px 16px 12px 0; }
+.fig + .fig { border-left: 1px solid var(--rule); padding-left: 16px; }
+.fig .v { font-family: var(--display); font-size: 26px; font-weight: 600;
+  line-height: 1.05; font-variant-numeric: tabular-nums; }
+.fig .k { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
 
 /* tables ----------------------------------------------------------------- */
 table { width: 100%; border-collapse: collapse; margin: 8px 0 14px;
@@ -121,12 +136,33 @@ tbody tr:nth-child(even) { background: var(--band); }
 .pill.test { background: #FDF3DC; color: #7A5400; }
 .pill.replace { background: #E7EEFA; color: #1B4F94; }
 
-.checks li { margin-bottom: 7px; }
+.checks li { margin-bottom: 8px; }
 .check-pass::marker { content: "PASS  "; }
 .check-fix::marker  { content: "FIX  "; }
 .hooklist { margin: 0; padding-left: 18px; }
-.hooklist li { margin-bottom: 5px; }
+.hooklist li { margin-bottom: 6px; }
 .hooklist .m { color: var(--muted); font-size: 11px; }
+
+/* recommendations — a numbered run of things to actually make ------------ */
+.recs { list-style: none; margin: 10px 0 0; padding: 0; counter-reset: rec; }
+.recs li { counter-increment: rec; padding: 12px 0 12px 42px; position: relative;
+  border-top: 1px solid var(--rule); break-inside: avoid; }
+.recs li::before { content: counter(rec); position: absolute; left: 0; top: 12px;
+  font-family: var(--display); font-size: 20px; font-weight: 600;
+  color: var(--accent); line-height: 1; }
+.recs .h { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+.recs .w { color: var(--soft); max-width: 66ch; }
+.recs .tag { display: inline-block; font-size: 10.5px; color: var(--muted);
+  margin-top: 4px; }
+
+/* the countdown — what would make an undecided finding decidable --------- */
+.needs { color: var(--accent); font-weight: 600; }
+
+.frame { border: 1px solid var(--rule); border-radius: 4px; padding: 14px 16px;
+  margin: 12px 0; background: var(--band); break-inside: avoid; }
+.frame h4 { margin: 0 0 4px; font-size: 13.5px; font-weight: 700; }
+.frame p { margin: 0; color: var(--soft); }
+.frame + .frame { margin-top: 10px; }
 
 footer { margin-top: 10mm; padding-top: 8px; border-top: 1px solid var(--rule);
   font-size: 10.5px; color: var(--muted); display: flex;
@@ -203,11 +239,24 @@ def _cover(ctx: dict) -> str:
     if k.get("start") and k.get("end"):
         span = f"{k['start']:%d %b %Y} to {k['end']:%d %b %Y}"
 
+    posts = k.get("n", 0)
+    views = k.get("total_views", 0)
+    # Months below a year: rounding 210 days up to "1 year" overstates the
+    # catalogue on exactly the accounts least able to afford an overstatement.
+    days = k.get("span_days") or 30
+    if days >= 400:
+        n = round(days / 365 * 10) / 10
+        span = f"{n:g} year{'s' if n != 1 else ''}"
+    else:
+        n = max(1, round(days / 30.4))
+        span = f"{n} month{'s' if n != 1 else ''}"
     return f"""
 <section class="page cover">
-  <h1>TikTok content analysis</h1>
-  <p class="sub">A read of what this account has actually published, and a
-     30-day plan built from it.</p>
+  <h1>What @{esc(meta['handle'])}<br>has already made</h1>
+
+  <p class="headline"><b>{_num(views)}</b>
+     views across {_num(posts)} posts, over {esc(span)}.
+     Here is what that adds up to, and what to make next.</p>
 
   <div class="provenance">
     <dl>
@@ -244,24 +293,22 @@ def _at_a_glance(ctx: dict) -> str:
     k = ctx["analysis"]["kpi"]
     cad = ctx["cadence"]
     limits = ctx.get("limits", [])
-    tiles = [
-        ("Posts", _num(k.get("n", 0)), f"{k.get('per_week', 0)} per week"),
-        ("Total views", _num(k.get("total_views", 0)), f"best post {_num(k.get('best', 0))}"),
-        ("Average views", _num(k.get("avg", 0)), f"median {_num(k.get('median', 0))}"),
-        ("Like rate", f"{k.get('like_rate', 0)}%",
-         f"comments {k.get('comment_rate', 0)}%"),
+    figures = [
+        (_num(k.get("avg", 0)), f"average views · median {_num(k.get('median', 0))}"),
+        (_num(k.get("best", 0)), "best post"),
+        (f"{k.get('per_week', 0)}", "posts a week"),
+        (f"{k.get('like_rate', 0)}%", f"like rate · {k.get('comment_rate', 0)}% comments"),
     ]
-    tile_html = "".join(
-        f'<div class="tile"><div class="k">{esc(a)}</div>'
-        f'<div class="v">{b}</div><div class="n">{esc(c)}</div></div>'
-        for a, b, c in tiles)
+    fig_html = "".join(
+        f'<div class="fig"><div class="v">{v}</div><div class="k">{esc(kk)}</div></div>'
+        for v, kk in figures)
 
     limit_items = "".join(f"<li>{esc(x)}</li>" for x in limits)
     return f"""
 <section class="page">
   <h2>At a glance</h2>
   <p class="sub">The shape of the account before any interpretation.</p>
-  <div class="tiles">{tile_html}</div>
+  <div class="figures">{fig_html}</div>
   {_prose(ctx.get('narrative'), 'glance')}
 
   <h3>Posting rhythm</h3>
@@ -306,15 +353,23 @@ def _themes(ctx: dict) -> str:
     for r in rows:
         call = calls.get(r["name"], {})
         pill = call.get("call", "test")
+        evidence = _v(r["verdict"])
+        if r.get("needs"):
+            evidence += (f'<br><span class="needs">+{r["needs"]} posts '
+                         f'to settle</span>')
         table_rows.append([
             esc(r["name"]), _num(r["n"]), f'{r["share"]}%', _num(r["avg"]),
-            _delta(r["delta"]), _v(r["verdict"]),
+            _delta(r["delta"]), evidence,
             f'<span class="pill {pill}">{esc(call.get("label", "Test more"))}</span>',
         ])
 
-    method_note = (f'Themes were found by {esc(t["method"])}.'
-                   + (f' The feed reads as about <strong>{t["effective_themes"]} '
-                      f'distinct styles</strong>.' if t.get("effective_themes") else ""))
+    method = str(t.get("method") or "")
+    method_note = ("Themes are carried over from the previous analysis of this "
+                   "account." if method.startswith("reused")
+                   else f'Themes were found by {esc(method)}.')
+    if t.get("effective_themes"):
+        method_note += (f' The feed reads as about <strong>'
+                        f'{t["effective_themes"]} distinct styles</strong>.')
 
     return f"""
 <section class="page">
@@ -350,7 +405,7 @@ def _hooks(ctx: dict) -> str:
                      _delta(r["vs_rest"]), _v(r["verdict"])]
                     for r in rep["repeated_openers"]]
         rep_block = _table(["Repeated opener", "Posts", "Avg views", "vs the rest",
-                            "Evidence"], rep_rows)
+                            "Evidence"], rep_rows, left_cols={0})
         rep_note = (f'<p><strong>{rep["templated_posts"]} posts '
                     f'({rep["templated_share"]}%)</strong> open with a phrasing this '
                     f'account has used at least three times. Pooled against everything '
@@ -487,16 +542,52 @@ def _demand(ctx: dict) -> str:
     topics = research.get("topics") or []
     topic_rows = [[esc(t["topic"]), _num(t.get("posts")), esc(t.get("evidence", "")[:80])]
                   for t in topics]
+
+    # Real questions people asked in the last 30 days. These are the most
+    # directly usable thing on the page - each one is a video someone wants.
+    # Filtered through exactly the same test the recommendations use: the
+    # research skill returns product launches and link-dumps alongside real
+    # questions, and listing those here under "what people are asking" is
+    # simply untrue.
+    from ..calendar.recommend import is_filmable_question
+    asked = [c for c in (research.get("l30_clusters") or [])
+             if c.get("title") and is_filmable_question(c["title"])][:6]
+    if asked:
+        def _sub(c):
+            s = (c.get("summary") or "").strip()
+            same = s[:60].lower().strip(" .…") == c["title"][:60].lower().strip(" .…")
+            return "" if (same or len(s) <= 30) else \
+                f'<br><span class="m">{esc(s[:150])}</span>'
+        items = "".join(f'<li>{esc(c["title"])}{_sub(c)}</li>' for c in asked)
+        questions = ("<h3>What people are actually asking</h3>"
+                     "<p class='sub'>Questions posted in the last 30 days, "
+                     "gathered by the last30days skill. Each of these is a "
+                     "video somebody already wants.</p>"
+                     f"<ul class='hooklist'>{items}</ul>")
+    elif research.get("l30_clusters"):
+        # Say why the list is missing. A section that silently disappears
+        # looks like a broken feature; this looks like what it is.
+        questions = ("<h3>What people are actually asking</h3>"
+                     f"<p class='sub'>The research skill found "
+                     f"{len(research['l30_clusters'])} discussions in this "
+                     f"niche over the last 30 days, but none of them were "
+                     f"questions worth answering on camera — they were product "
+                     f"launches, promotions and resurfaced articles. Nothing "
+                     f"has been invented to fill the gap.</p>")
+    else:
+        questions = ""
     return f"""
 <section class="page">
   <h2>What the niche is talking about</h2>
   <p class="sub">Outside demand signal, gathered at the time of this run.</p>
   {_prose(ctx.get('narrative'), 'demand')}
-  {_table(["Topic", "Posts seen", "Evidence"], topic_rows) if topic_rows else ""}
+  {_table(["Topic", "Posts seen", "Evidence"], topic_rows,
+          left_cols={2}) if topic_rows else ""}
+  {questions}
   <h3>Which sources were reachable</h3>
   <p class="sub">A partial pull is not the whole picture, so this states plainly
      what was and was not consulted.</p>
-  {_table(["Source", "Status", "Note"], rows)}
+  {_table(["Source", "Status", "Note"], rows, left_cols={2})}
   <footer><span>{esc(attribution.stamp_footer())}</span><span>Demand signal</span></footer>
 </section>"""
 
@@ -519,10 +610,107 @@ def _calendar(ctx: dict) -> str:
   {charts.donut(mix, title="Post-type mix across the 30 days", value_key="n",
                 label_key="name")}
   {_prose(ctx.get('narrative'), 'calendar')}
-  {_table(["Day", "Date", "Type", "Theme", "Prompt", "Evidence"], rows)}
+  {_table(["Day", "Date", "Type", "Theme", "Prompt", "Evidence"], rows,
+          left_cols={3, 4})}
   <p class="sub">The same calendar is in the accompanying spreadsheet, with
      columns for your caption, platform and whether you posted.</p>
   <footer><span>{esc(attribution.stamp_footer())}</span><span>30-day calendar</span></footer>
+</section>"""
+
+
+def _recommendations(ctx: dict) -> str:
+    from ..calendar.recommend import KIND_LABEL
+    recs = ctx.get("recommendations") or []
+    if not recs:
+        return ""
+    items = "".join(
+        f'<li><div class="h">{esc(r["headline"])}</div>'
+        f'<div class="w">{esc(r["why"])}</div>'
+        f'<div class="tag">{esc(KIND_LABEL.get(r["kind"], r["kind"]))}'
+        f' &nbsp;·&nbsp; from {esc(r["source"])}</div></li>'
+        for r in recs)
+    return f"""
+<section class="page">
+  <h2>What to make next</h2>
+  <p class="sub">Specific things to film, ordered by how much evidence sits
+     behind them. The first few come from this account's own numbers; the
+     later ones from what the niche is posting and asking right now.</p>
+  {_prose(ctx.get('narrative'), 'recommendations')}
+  <ol class="recs">{items}</ol>
+  <footer><span>{esc(attribution.stamp_footer())}</span><span>What to make next</span></footer>
+</section>"""
+
+
+def _frameworks(ctx: dict) -> str:
+    """The creator playbook this report's checks are built on, stated plainly.
+
+    Included because the analysis keeps referring to it — content style, hooks,
+    profile conversion — and a reader deserves the underlying model rather than
+    just its verdicts.
+    """
+    audit = ctx.get("profile_audit")
+    words = (ctx.get("research") or {}).get("audience_words") or []
+    themes_info = ctx["themes"]
+    eff = themes_info.get("effective_themes")
+
+    style_line = (f"Your feed currently reads as about <strong>{eff} distinct "
+                  f"styles</strong>. " if eff else "")
+    audience_line = ("Words the accounts around you repeat in their bios: "
+                     + ", ".join(esc(w) for w in words[:8]) + ". "
+                     if words else "")
+    profile_line = (f"You passed {audit['passed']} of {audit['total']} profile "
+                    f"checks. " if audit else "")
+
+    return f"""
+<section class="page">
+  <h2>The frameworks behind this</h2>
+  <p class="sub">The creator playbook these checks are built on, credited to
+     @teezytheturtle. Stated here so you can apply it without the report.</p>
+
+  <div class="frame">
+    <h4>1. Find the audience by studying who already has it</h4>
+    <p>Somebody is already making content for the people you want. Read how
+       they name their audience in their bio, what they post about, what
+       register they write in. {audience_line}That is your positioning research,
+       and it is free.</p>
+  </div>
+
+  <div class="frame">
+    <h4>2. The profile converts, the content only delivers</h4>
+    <p>Reach gets someone to a video; the profile turns them into a follower.
+       Four things do that work: a picture that still reads at comment size, a
+       bio of three or four scannable lines that names who it is for and what
+       they get, a link so the attention has somewhere to go, and pinned posts
+       that show your best work first. {profile_line}The audit page has the
+       specifics.</p>
+  </div>
+
+  <div class="frame">
+    <h4>3. A unique style is found by subtraction</h4>
+    <p>Test several kinds of content, drop the ones that do not travel, replace
+       them, repeat. {style_line}That loop is what the theme table on this
+       report is measuring — Keep, Ditch and Test more are the three moves in
+       it. The trap is quitting a style before you have made enough of it to
+       know.</p>
+  </div>
+
+  <div class="frame">
+    <h4>4. The hook is the whole first second</h4>
+    <p>A strong opening buys you the rest of the video, and a script that holds
+       after the hook is what turns a view into watch time. Vary the shape of
+       your openings — repeating the same opener is one of the least visible
+       ways to lose reach, and the hooks page checks for exactly that.</p>
+  </div>
+
+  <div class="frame">
+    <h4>5. Post often enough to learn</h4>
+    <p>Daily is the advice, and the reason is not the algorithm — it is that
+       you cannot find your style from six posts. Frequency is what makes
+       everything else in this report measurable. The timing page tests whether
+       it has shown up in your own numbers yet.</p>
+  </div>
+
+  <footer><span>{esc(attribution.stamp_footer())}</span><span>Frameworks</span></footer>
 </section>"""
 
 
@@ -574,6 +762,7 @@ def render(ctx: dict) -> str:
     body = "".join(part for part in [
         _cover(ctx),
         _at_a_glance(ctx),
+        _recommendations(ctx),
         _reach(ctx),
         _themes(ctx),
         _audience(ctx),
@@ -581,6 +770,7 @@ def render(ctx: dict) -> str:
         _timing(ctx),
         _demand(ctx),
         _calendar(ctx),
+        _frameworks(ctx),
         _method(ctx),
     ] if part)
 

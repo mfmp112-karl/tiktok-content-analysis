@@ -46,7 +46,14 @@ Written to `~/.tiktok-content-analysis/reports/<handle>/<timestamp>/`:
    are labelled *solid evidence*, *early signal*, or *not enough data yet*.
 5. **Checks the niche** by reading TikTok's own hashtag and search pages through
    camofox, and peer bios to see how others position themselves.
-6. **Builds the calendar** from the account's own strongest themes and its own
+6. **Asks what the niche is asking** through the `last30days` skill — Reddit,
+   Hacker News and the web. A question somebody actually typed out is the best
+   content prompt there is.
+7. **Recommends what to make**, as a numbered list ordered by how much evidence
+   sits behind each item: double down on what already travels, rework what
+   demonstrably does not, answer the questions people are asking, and try the
+   one or two things the niche is doing that this account has never touched.
+8. **Builds the calendar** from the account's own strongest themes and its own
    best-performing openings.
 
 ### The part most tools skip

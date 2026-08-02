@@ -33,7 +33,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from tta import __version__, attribution, console, paths, store          # noqa: E402
 from tta.analyse import (aggregates as ag, cadence, hooks, profile_audit,  # noqa: E402
                          themes)
-from tta.calendar import build as calbuild, workbook                     # noqa: E402
+from tta.calendar import build as calbuild, recommend, workbook                     # noqa: E402
 from tta.harvest import camofox, ytdlp                                   # noqa: E402
 from tta.report import html as rhtml, pdf                                # noqa: E402
 from tta.research import last30days, tiktok_demand                       # noqa: E402
@@ -237,6 +237,7 @@ def research(shortlisted: list[dict], args, own_tags: list[str]) -> dict:
                                             "note": str(exc)[:120]}]}
     out["coverage"].extend(extra["coverage"])
     out["last30days"] = extra["items"]
+    out["l30_clusters"] = extra.get("clusters") or []
     for row in out["coverage"]:
         print(f"  {'reached' if row['ok'] else 'not reached'}: {row['source']}"
               f" — {row['note']}")
@@ -276,6 +277,13 @@ def run(args) -> int:
         demand = research(shortlisted, args, own_tags)
         calls = themes.calls(analysis["theme"], gaps=demand.get("gaps"))
 
+        recs = recommend.build(
+            analysis=analysis, theme_calls=calls, shortlist=shortlisted,
+            hook_info=hook_info, cadence_info=cad, research=demand,
+            profile_audit=profile_audit.audit(prof, video_count=len(videos))
+            if prof else None)
+        print(f"  {len(recs)} recommendations")
+
         banner("5/6  Building the 30-day calendar")
         cal = calbuild.build(shortlist=shortlisted, theme_calls=calls,
                              winning_hooks=hook_info["winning_hooks"],
@@ -308,6 +316,7 @@ def run(args) -> int:
             "profile_audit": audit,
             "peers": demand.get("peers"),
             "research": demand,
+            "recommendations": recs,
             "calendar": cal,
             "limits": rhtml.default_limits(),
             "narrative": load_narrative(args.narrative),

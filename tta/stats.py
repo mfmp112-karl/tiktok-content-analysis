@@ -152,6 +152,43 @@ def plain(verdict: str) -> str:
     return PLAIN.get(verdict, verdict)
 
 
+def posts_needed(group: list[int], rest: list[int]) -> int | None:
+    """Roughly how many more posts before this comparison could be decided.
+
+    "Not enough data yet" is the honest answer for most findings on most
+    accounts, and as a bare verdict it is also a dead end — it tells someone
+    their work is unmeasurable without telling them what would change that.
+    This turns it into a number they can act on.
+
+    The estimate: |t| grows about as sqrt(n), so to reach the 0.05 threshold
+    the group needs roughly n * (1.96 / |t|)^2 posts. Below the minimum group
+    size the answer is simply the shortfall. Returns None when the gap is
+    already decided or is so small that no realistic number of posts would
+    settle it.
+    """
+    if len(group) < MIN_GROUP:
+        return MIN_GROUP - len(group)
+    if len(rest) < MIN_GROUP:
+        return None
+
+    a = [math.log1p(max(0, v)) for v in group]
+    b = [math.log1p(max(0, v)) for v in rest]
+    t, _, p = welch(a, b)
+    if p < MODERATE_P:
+        return None                      # already answered
+    if abs(t) < 1e-6:
+        return None                      # no gap to detect at any sample size
+    needed = len(a) * (1.96 / abs(t)) ** 2
+    extra = int(math.ceil(needed - len(a)))
+    if extra <= 0:
+        return None
+    # Past a couple of months of posting the number stops being advice. "About
+    # 106 more posts on this theme" is arithmetically right and practically
+    # useless — it reads as "never". Say nothing rather than something
+    # discouraging and unactionable.
+    return extra if extra <= 40 else None
+
+
 # ------------------------------------------------------------- distribution shape
 
 def entropy(counts: list[int]) -> float:

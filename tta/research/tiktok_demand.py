@@ -22,6 +22,9 @@ from ..harvest import camofox
 DEFAULT_SCROLLS = 8
 MAX_TOPICS = 4
 MAX_PEERS = 6
+#: A tag must show up this often across the whole scan before it is offered
+#: as a content gap. One sighting is a coincidence, not a trend.
+MIN_GAP_MENTIONS = 3
 
 #: Discovery tags, not topics. They are on almost every post in every niche, so
 #: they dominate any frequency count while saying nothing about subject matter.
@@ -98,6 +101,7 @@ def _summarise(topic: str, cards: list[dict], *, source: str) -> dict:
         "posts": len(cards),
         "median_views": sorted(views)[len(views) // 2] if views else None,
         "top_hashtags": [f"#{t}" for t, _ in top_tags],
+        "tag_counts": {t: n for t, n in top_tags},
         "creators": [c for c, _ in top_creators],
         "evidence": ", ".join(f"#{t}" for t, _ in top_tags[:4]) or f"{len(cards)} posts seen",
     }
@@ -201,13 +205,24 @@ def run(topics: list[str], *, scrolls: int = DEFAULT_SCROLLS,
     # account already posts under is not a gap — suggesting it back would be
     # telling someone to start doing the thing they are already doing.
     own = {t.lstrip("#").lower() for t in (exclude or [])}
-    gaps: list[str] = []
+    pooled: dict[str, int] = {}
     for r in rows:
-        for tag in r["top_hashtags"]:
-            bare = tag.lstrip("#").lower()
-            if bare in GENERIC_TAGS or bare in own or tag in gaps:
-                continue
-            gaps.append(tag)
+        for tag, n in (r.get("tag_counts") or {}).items():
+            pooled[tag] = pooled.get(tag, 0) + n
+
+    gaps: list[str] = []
+    for tag, count in sorted(pooled.items(), key=lambda kv: -kv[1]):
+        bare = tag.lstrip("#").lower()
+        # Three separate guards, each of which produced a bad suggestion in
+        # testing: generic discovery tags, tags the account already posts
+        # under, and one-off tags that happened to appear on a single card
+        # (which is how a German-language hashtag ended up planned into an
+        # English fitness calendar).
+        if bare in GENERIC_TAGS or bare in own or count < MIN_GAP_MENTIONS:
+            continue
+        if not bare.isascii():
+            continue
+        gaps.append(f"#{tag}")
 
     return {
         "topics": rows,

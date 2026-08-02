@@ -51,6 +51,26 @@ python driver.py @handle --no-cluster --since 2026-01-01
 | `--since YYYY-MM-DD` | Ignore older posts. |
 | `--narrative FILE` | JSON of written commentary to fold into the report — see below. |
 
+## What the report contains
+
+Ten sections, in this order. The two that people read first are **What to make
+next** and **The next 30 days**.
+
+| Section | What it answers |
+|---|---|
+| Cover | Which account, read through which session, when, by what version — plus the ethical-use notice. |
+| At a glance | The shape of the account, and what this report cannot tell you. |
+| **What to make next** | A numbered list of specific things to film, ordered by evidence. |
+| Reach and trajectory | Where it is heading, month by month. |
+| What this account is about | Themes as a 3D pie, with Keep / Ditch / Test more / Try. |
+| Who you are talking to | Profile audit and how peers position themselves. |
+| Hooks and captions | Which caption features travel; whether openers are templated. |
+| Timing and consistency | Best day and hour, and whether posting more has helped. |
+| What the niche is talking about | Demand signal, and what people are actually asking. |
+| **The next 30 days** | The calendar, on the five-day rotation. |
+| The frameworks behind this | The creator playbook, stated so it can be used without the report. |
+| Method, limits and credits | How every number was produced. |
+
 ## What it writes
 
 Everything lands in `~/.tiktok-content-analysis/reports/<handle>/<timestamp>/`:
@@ -139,6 +159,22 @@ These all cost real time to discover.
   `Sound / Original / <name>` is this, not a real theme. The clustering itself
   is deterministic (fixed seed); the input text is what moved. Use
   `--no-cluster` when you want a re-run to match a previous report exactly.
+
+- **last30days must be called as `--emit json --output FILE`.** The compact
+  emitter plus a `--save-dir` glob returns nothing while still exiting zero, so
+  the report says "ran but returned nothing usable" and it reads like the
+  skill's fault. Also: more than one copy is usually installed and they drift
+  many versions apart, so pick by the `version:` in frontmatter — older builds
+  have no `--register` or `--output`.
+
+- **Send it one topic, not a concatenation.** Joining two mechanical theme
+  labels produced the query "workout and glutes cardio and work", which came
+  back as eight Hacker News product launches.
+
+- **Research results need a junk filter.** Left unfiltered, the recommendations
+  read "Answer this: Show HN: open-source workout tracker". `recommend.
+  is_filmable_question` drops launches, link-dumps, promos and titles ending in
+  a parenthesised year, and requires an actual question shape.
 
 - **Two runs at once used to deadlock.** The database is opened WAL with a
   60-second busy timeout, which fixes it — but a database created by an older
