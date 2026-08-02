@@ -1,0 +1,13 @@
+# The entire dependency list. Deliberately short: this tool is meant to be
+# installable by people who are not developers, and every extra package is a
+# place a first run can fail.
+yt-dlp>=2024.1.0      # public catalogue enumeration, no API key
+openpyxl>=3.1         # the calendar workbook
+
+# Deliberately NOT dependencies:
+#   scipy    - Welch's t-test is implemented in tta/stats.py against math.lgamma
+#              and cross-checks to 6.5e-13 against scipy. Avoids a compiler on Windows.
+#   numpy / scikit-learn - TF-IDF and k-means are in tta/analyse/themes.py.
+#   reportlab / weasyprint - the PDF comes from a browser you already have,
+#              with a stdlib-only fallback in tta/report/minipdf.py.
+#   sentence-transformers - optional upgrade, used automatically if present.

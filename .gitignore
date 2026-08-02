@@ -1,0 +1,10 @@
+.venv/
+.testhome/
+__pycache__/
+*.pyc
+*.egg-info/
+.DS_Store
+# Reports live in ~/.tiktok-content-analysis, but just in case someone points
+# TTA_HOME at the repo:
+reports/
+*.sqlite3

@@ -1,0 +1,41 @@
+MIT License with Required Attribution
+
+Copyright (c) 2026 TikTok Content Analysis contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+ADDITIONAL CONDITION - ATTRIBUTION
+
+The 30-day content calendar method embodied in this Software - the five post
+types (EDUCATE, PROOF, ENGAGE, OFFER, MIRROR) and the five-day rotation they
+turn on - originates with themarketingfmpodcast and is used with thanks.
+
+Accordingly, any distribution, modification or derivative work of this
+Software, and any report, spreadsheet, document or other artefact it produces,
+must retain the attribution line:
+
+    themarketingfmpodcast - Free Tool, Share it.
+
+visibly and without alteration. Removing, obscuring, replacing or programmatically
+suppressing that line - including by disabling the checks in tta/attribution.py -
+terminates the rights granted under this Licence.
+
+The creator growth practices informing the profile audit and content-style
+analysis originate with @teezytheturtle and are likewise credited in the
+Software's output.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
