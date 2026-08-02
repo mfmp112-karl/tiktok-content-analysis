@@ -212,7 +212,7 @@ def screenshot(tab: str, path: Path, *, full_page: bool = True) -> bool:
 PROFILE_JS = """
 (() => {
   const text = document.body ? (document.body.innerText || '') : '';
-  const out = { ready: false, source: null, len: text.length,
+  const out = { ready: false, source: null, walled: false, len: text.length,
                 sample: text.slice(0, 120) };
 
   // 1. the page's own hydration payload - exact numbers when it is there
@@ -235,8 +235,21 @@ PROFILE_JS = """
     } catch (e) { /* fall through */ }
   }
 
+  // A wall, not an empty account. TikTok serves the profile shell with every
+  // figure rendered as "-" when the creator has audience controls on, or when
+  // it wants a login. Reporting that as "private or renamed" sends people
+  // looking for the wrong problem.
+  const walled = /audience controls|log in to tiktok|log in to make the most/i
+                   .test(text);
+
+  // Placeholder dashes are not data. Treating "-" as a value is what made the
+  // DOM branch claim success with every field empty.
+  const real = (s) => {
+    const v = (s || '').trim();
+    return (!v || v === '-' || v === '—') ? '' : v;
+  };
   const pick = (sel) => { const n = document.querySelector(sel);
-                          return n ? (n.textContent || '').trim() : ''; };
+                          return real(n ? n.textContent : ''); };
   const meta = (p) => { const n = document.querySelector(`meta[property="${p}"]`);
                         return n ? n.getAttribute('content') || '' : ''; };
 
@@ -246,7 +259,7 @@ PROFILE_JS = """
   const likes     = pick('[data-e2e="likes-count"]');
   if (followers) {
     const avatarNode = document.querySelector('[data-e2e="user-avatar"] img, header img');
-    return { ready: true, source: 'dom',
+    return { ready: true, source: 'dom', walled: walled,
              handle: pick('[data-e2e="user-title"]') || null,
              nickname: pick('[data-e2e="user-subtitle"]') || null,
              bio: pick('[data-e2e="user-bio"]') || meta('og:description') || '',
@@ -262,7 +275,7 @@ PROFILE_JS = """
   const m = text.match(
     /([\\d.,]+[KMB]?)\\s*Following\\s*([\\d.,]+[KMB]?)\\s*Followers\\s*([\\d.,]+[KMB]?)\\s*Likes/i);
   if (m) {
-    return { ready: true, source: 'text',
+    return { ready: true, source: 'text', walled: walled,
              handle: null, nickname: null,
              bio: meta('og:description') || '', link: '',
              avatar: meta('og:image') || '',
@@ -270,6 +283,7 @@ PROFILE_JS = """
              following_text: m[1], followers_text: m[2], hearts_text: m[3],
              videos: null };
   }
+  out.walled = walled;
   return out;
 })()
 """
@@ -300,6 +314,7 @@ CARDS_JS = """
       text: (alt || card.innerText || '').slice(0, 300)
     });
   });
+  out.walled = walled;
   return out;
 })()
 """
@@ -353,6 +368,10 @@ def profile(handle: str, *, log=print) -> dict | None:
                 continue
             if isinstance(data, dict) and data.get("ready"):
                 return _normalise(data)
+            if isinstance(data, dict) and data.get("walled"):
+                log(f"    @{handle}: TikTok is requiring a login for this "
+                    f"profile (the creator has audience controls on)")
+                return {"walled": True, "handle": handle}
             time.sleep(SETTLE_GAP)
         log(f"    @{handle}: profile did not hydrate (login wall or rate limit)")
         return None

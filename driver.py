@@ -158,12 +158,28 @@ def harvest(conn, handle: str, args) -> dict:
         print("\n" + chrome_handoff.permission_request(handle))
         raise SystemExit(2)
 
+    # Check the profile before scrolling. If TikTok is holding the page behind
+    # a login there is nothing to scroll, and "could not read any videos" sends
+    # the user looking for a problem with the account rather than with their
+    # access to it.
+    probe = camofox.profile(handle)
+    if isinstance(probe, dict) and probe.get("walled"):
+        from tta.harvest import chrome_handoff
+        print(f"\n  TikTok is serving @{handle} to logged-in visitors only — the "
+              f"creator has audience controls switched on. Follower counts read "
+              f"as '-' and the video grid is empty for anyone signed out, so "
+              f"neither the public path nor the stealth browser can see it.")
+        print("\n" + chrome_handoff.permission_request(handle))
+        raise SystemExit(3)
+
     cards = camofox.scroll_harvest(f"https://www.tiktok.com/@{handle}",
                                    max_scrolls=args.scrolls)
     rows = [{"video_id": c["video_id"], "url": c["url"], "title": c["text"],
              "views": c["views"] or 0} for c in cards if c["creator"].lower() == handle]
     if not rows:
-        raise SystemExit(f"Could not read any videos for @{handle}.")
+        raise SystemExit(
+            f"Could not read any videos for @{handle}. The account may be "
+            f"private, renamed, or have no public posts.")
     store.upsert_videos(conn, handle, rows)
     conn.commit()
     return {"tier": "camofox scroll", "stored": len(rows), "new": len(rows),
