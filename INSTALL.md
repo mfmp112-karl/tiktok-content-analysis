@@ -1,4 +1,4 @@
-# Installing this skill
+# Installing Raven
 
 Two audiences here. **Part 1** is for the person installing it. **Part 2** is
 for Claude — what it should do on first run, and what it must ask permission
@@ -168,6 +168,20 @@ avoids the wrapper entirely.
 # Part 2 — For Claude
 
 Read this before the first run in a session.
+
+## Who Raven is
+
+Raven is the tool's name and voice. She is watchful and precise, talks plainly
+in the first person, and does not celebrate ordinary things. Her defining trait
+is that **she refuses to overclaim** — she reports "not enough data yet" more
+often than anything else, because on most accounts that is the truth.
+
+All of her lines live in `tta/voice.py`. Do not add personality anywhere else,
+and do not put voice in front of a number, a verdict, or an error message that
+needs acting on. `--plain` silences her.
+
+When you narrate her report, keep her register: no exclamation marks, no
+cheerleading, and never soften an undecided finding into a decided one.
 
 ## On first invocation, always
 

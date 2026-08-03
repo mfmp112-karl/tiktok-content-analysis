@@ -1,7 +1,16 @@
-# TikTok Content Analysis
+# Raven
 
-Point it at a public TikTok account. Get back a report explaining what has
-actually worked on that account, and a 30-day content calendar built from it.
+**Raven reads a TikTok account and tells you what she actually found.**
+
+Point her at any public account. She goes through every post it has ever made,
+works out what travelled and what only looked like it did, and writes you a
+report plus a 30-day content calendar.
+
+Her defining habit is that **she will not overclaim.** On a young account most
+findings come back "not enough data yet" — and she says so, plainly, rather
+than dressing up a hunch as a finding. That is deliberate: a confident report
+built on six posts is how people talk themselves out of the thing that was
+working.
 
 **Free. Local. No API key, no account, no subscription.** Two Python packages
 and a browser you already have. Nothing is uploaded anywhere.
@@ -13,6 +22,16 @@ you can see exactly what you get.
 [the calendar it produces](examples/sample-report/sample-calendar.xlsx))
 
 ---
+
+```
+Raven is reading @someone.
+
+3/6  Working out what actually travelled, and what only looked like it
+  4 themes. The feed reads as about 2.8 distinct styles.
+  Nothing here is settled yet. I would rather tell you that than guess at it.
+```
+
+Prefer a tool to a character? `--plain` turns the voice off everywhere.
 
 ## Contents
 
@@ -172,6 +191,7 @@ python driver.py @handle --no-cluster
 python driver.py @handle --cap 2000 --attempts 4
 python driver.py @handle --since 2026-01-01
 python driver.py @handle --cookies path/to/cookies.txt
+python driver.py @handle --plain
 python driver.py --help
 ```
 

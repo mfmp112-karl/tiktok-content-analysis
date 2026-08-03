@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TikTok Content Analysis — one command, from a handle to a PDF.
+"""Raven — one command, from a TikTok handle to a report she wrote.
 
     python driver.py @handle              # everything
     python driver.py                      # asks for the handle
@@ -30,7 +30,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from tta import __version__, attribution, console, paths, store          # noqa: E402
+from tta import __version__, attribution, console, paths, store, voice   # noqa: E402
 from tta.analyse import (aggregates as ag, cadence, hooks, profile_audit,  # noqa: E402
                          themes)
 from tta.calendar import build as calbuild, recommend, workbook                     # noqa: E402
@@ -47,8 +47,8 @@ def banner(text: str) -> None:
 
 def doctor() -> int:
     """What is here, what is missing, and the one line that fixes each."""
-    print(f"\nTikTok Content Analysis {__version__}")
-    print("=" * 58)
+    print(f"\n{voice.mark()}   v{__version__}")
+    print("=" * 62)
 
     rows: list[tuple[str, bool, bool, str, str]] = []   # label, ok, required, detail, fix
 
@@ -148,12 +148,11 @@ def doctor() -> int:
 # ------------------------------------------------------------------------- steps
 
 def harvest(conn, handle: str, args) -> dict:
-    banner("1/6  Reading the public catalogue")
+    banner(f"1/6  {voice.step('harvest')}")
     try:
         summary = ytdlp.pull(conn, handle, cap=args.cap, attempts=args.attempts,
                              since=args.since, cookies=args.cookies)
-        print(f"  {summary['stored']} videos stored "
-              f"({summary['new']} new, {summary['already_had']} already held)")
+        print(voice.found(summary["stored"], summary["new"]))
         return summary
     except ytdlp.HarvestBlocked as exc:
         print(f"  {exc}")
@@ -174,10 +173,10 @@ def harvest(conn, handle: str, args) -> dict:
     probe = camofox.profile(handle)
     if isinstance(probe, dict) and probe.get("walled"):
         from tta.harvest import chrome_handoff
-        print(f"\n  TikTok is serving @{handle} to logged-in visitors only — the "
-              f"creator has audience controls switched on. Follower counts read "
-              f"as '-' and the video grid is empty for anyone signed out, so "
-              f"neither the public path nor the stealth browser can see it.")
+        print("\n" + voice.blocked(handle))
+        print(f"  Follower counts read as '-' and the grid is empty for anyone "
+              f"signed out, so neither the public path nor the stealth browser "
+              f"can see it.")
         print("\n" + chrome_handoff.permission_request(handle))
         raise SystemExit(3)
 
@@ -196,7 +195,7 @@ def harvest(conn, handle: str, args) -> dict:
 
 
 def read_profile(conn, handle: str, enabled: bool) -> dict | None:
-    banner("2/6  Reading the profile")
+    banner(f"2/6  {voice.step('profile')}")
     if not enabled:
         print("  skipped (--no-profile)")
         return None
@@ -219,13 +218,16 @@ def read_profile(conn, handle: str, enabled: bool) -> dict | None:
 
 
 def analyse(videos: list[dict], conn, handle: str, args) -> tuple[dict, dict]:
-    banner("3/6  Analysing")
-    print(f"  {len(videos)} videos")
+    banner(f"3/6  {voice.step('analyse')}")
+    if voice.is_plain():
+        print(f"  {len(videos)} videos")
     if not args.no_cluster:
-        info = themes.cluster(videos, log=lambda m: print(m))
+        info = themes.cluster(videos, log=lambda m: print(m) if voice.is_plain()
+                              else None)
         store.set_themes(conn, handle, info["assignments"])
         conn.commit()
         videos = store.load_videos(conn, handle)
+        print(voice.themes_found(info.get("k") or 0, info.get("effective_themes")))
     else:
         info = {"method": "reused stored themes", "k": None, "silhouette": None,
                 "concentration": None, "effective_themes": None, "fallback": False}
@@ -233,7 +235,7 @@ def analyse(videos: list[dict], conn, handle: str, args) -> tuple[dict, dict]:
 
 
 def research(shortlisted: list[dict], args, own_tags: list[str]) -> dict:
-    banner("4/6  What the niche is posting")
+    banner(f"4/6  {voice.step('research')}")
     if args.no_research:
         print("  skipped (--no-research)")
         return {"topics": [], "peers": [], "coverage": [
@@ -277,7 +279,8 @@ def run(args) -> int:
     started = time.time()
     out_dir = paths.ensure(paths.run_dir(handle))
 
-    print(f"\n=== @{handle} ===")
+    print()
+    print(voice.greeting(handle))
     print(f"Output: {out_dir}")
 
     with store.connect() as conn:
@@ -295,6 +298,14 @@ def run(args) -> int:
         hook_info = hooks.build(videos)
         cad = cadence.build(videos, analysis["weekday"], analysis["hour"])
 
+        every = [r for dim in ("theme", "weekday", "duration", "caption_length",
+                              "format", "hashtag_use")
+                 for r in analysis[dim]] + hook_info["features"]
+        print(voice.verdicts(
+            sum(1 for r in every if r.get("verdict") == "strong"),
+            sum(1 for r in every if r.get("verdict") == "moderate"),
+            len(every)))
+
         shortlisted = themes.shortlist(analysis["theme"])
         # Every tag ever used, not just the frequently-used ones: a tag the
         # account has posted even once is not a gap in its coverage.
@@ -309,7 +320,7 @@ def run(args) -> int:
             if prof else None)
         print(f"  {len(recs)} recommendations")
 
-        banner("5/6  Building the 30-day calendar")
+        banner(f"5/6  {voice.step('calendar')}")
         cal = calbuild.build(shortlist=shortlisted, theme_calls=calls,
                              winning_hooks=hook_info["winning_hooks"],
                              best_slot=cad["best_slot"], gaps=demand.get("gaps"),
@@ -321,7 +332,7 @@ def run(args) -> int:
         print(f"  {len(cal['days'])} days across {len(cal['themes_used'])} themes "
               f"-> {xlsx.name}")
 
-        banner("6/6  Writing the report")
+        banner(f"6/6  {voice.step('report')}")
         creator = store.creator(conn, handle)
         audit = profile_audit.audit(prof, video_count=len(videos))
         ctx = {
@@ -357,7 +368,8 @@ def run(args) -> int:
                                            if c["ok"]),
                          n_videos=len(videos), report_dir=str(out_dir))
 
-    print(f"\nDone in {time.time() - started:.0f}s")
+    print()
+    print(voice.finished(time.time() - started, str(out_dir)))
     print(f"  report   {result['html'].name}"
           + (f" + {result['pdf'].name} ({result['route']})" if result["pdf"] else ""))
     print(f"  calendar {xlsx.name}")
@@ -435,11 +447,15 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--cookies", metavar="FILE",
                     help="Netscape cookies.txt for a signed-in TikTok session; "
                          "needed for accounts with audience controls on")
+    ap.add_argument("--plain", action="store_true",
+                    help="drop the voice; terse, parseable output")
     ap.add_argument("--no-open", action="store_true",
                     help="do not open the report when finished")
     ap.add_argument("--narrative", metavar="FILE",
                     help="JSON of written commentary to fold into the report")
     args = ap.parse_args(argv[1:])
+    if args.plain:
+        voice.set_plain(True)
 
     if args.help_session:
         print()

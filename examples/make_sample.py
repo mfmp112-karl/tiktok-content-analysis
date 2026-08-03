@@ -156,10 +156,14 @@ def main() -> int:
         "calendar": cal, "recommendations": recs,
         "limits": rhtml.default_limits(),
         "narrative": {
-            "summary": "This is a sample report built from invented data, so "
-                       "you can see the shape of the output before installing "
-                       "anything. @example_creator is not a real account and "
-                       "every number below is fictional.",
+            "summary": (
+                "This is a sample. @example_creator does not exist and every "
+                "number in here is invented, so you can see the shape of what "
+                "Raven produces before installing anything."
+                "\n\n"
+                "On a real account the wording is the same and so is the "
+                "caution: most findings on a young account come back "
+                "undecided, and she says so rather than filling the space."),
         },
     }
 

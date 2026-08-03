@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from .. import attribution
+from .. import attribution, voice
 from ..stats import plain
 from . import charts
 from .charts import esc
@@ -79,6 +79,8 @@ p  { margin: 0 0 10px; max-width: 68ch; }
   font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
   display: block; line-height: 1; margin-bottom: 2px; }
 
+.signed { font-family: var(--display); font-style: italic; font-size: 15px;
+  color: var(--soft); max-width: 46ch; margin: -8px 0 20px; }
 .provenance { border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule);
   padding: 12px 0; margin: 22px 0; }
 .provenance dl { display: grid; grid-template-columns: max-content 1fr;
@@ -257,6 +259,7 @@ def _cover(ctx: dict) -> str:
   <p class="headline"><b>{_num(views)}</b>
      views across {_num(posts)} posts, over {esc(span)}.
      Here is what that adds up to, and what to make next.</p>
+  {f'<p class="signed">{esc(voice.cover_note(posts, span))}</p>' if voice.cover_note(posts, span) else ''}
 
   <div class="provenance">
     <dl>
@@ -266,7 +269,7 @@ def _cover(ctx: dict) -> str:
       <dt>Accessed via</dt><dd>{esc(meta['accessed_via'])}</dd>
       <dt>Data source</dt><dd>{esc(meta['harvest_tier'])}</dd>
       <dt>Generated</dt><dd>{esc(meta['generated'])}</dd>
-      <dt>Tool version</dt><dd>{esc(meta['version'])}</dd>
+      <dt>Read by</dt><dd>{esc(voice.NAME if not voice.is_plain() else 'TikTok Content Analysis')} v{esc(meta['version'])}</dd>
     </dl>
   </div>
 
@@ -319,6 +322,7 @@ def _at_a_glance(ctx: dict) -> str:
      <strong>{cad['gaps']['longest_gap']} days</strong>.</p>
 
   <h3>What this report cannot tell you</h3>
+  <p class="sub">{esc(voice.cannot_measure())}</p>
   <ul>{limit_items}</ul>
 
   <footer><span>{esc(attribution.stamp_footer())}</span><span>At a glance</span></footer>

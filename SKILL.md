@@ -1,18 +1,24 @@
 ---
 name: tiktok-content-analysis
-description: Analyse any public TikTok account and generate a 30-day content calendar. Use when asked to analyse, audit, review or research a TikTok account or creator, to build a TikTok or short-form content calendar or content plan, to find what themes and hooks work on an account, or to produce a TikTok performance report or PDF. Triggers include "analyse this tiktok account", "tiktok content calendar", "audit my tiktok", "what should I post", "content plan for @handle".
+description: Raven analyses any public TikTok account and generates a 30-day content calendar. Use when asked to analyse, audit, review or research a TikTok account or creator, to build a TikTok or short-form content calendar or content plan, to find what themes and hooks work on an account, or to produce a TikTok performance report or PDF. Triggers include "analyse this tiktok account", "tiktok content calendar", "audit my tiktok", "what should I post", "content plan for @handle", "ask Raven", "run Raven on".
 user_invocable: true
 argument_hint: "@handle"
-license: MIT with required attribution
+license: MIT
 ---
 
-# TikTok Content Analysis
+# Raven — TikTok content analysis
 
-Reads a public TikTok account's whole catalogue, works out what has actually
-worked, and writes a 30-day content calendar plus a print-ready PDF report.
+Raven reads a public TikTok account's whole catalogue, works out what has
+actually worked, and writes a 30-day content calendar plus a print-ready PDF.
 
 No API key, no account, no paid service. Two Python packages and a browser you
 almost certainly already have.
+
+**Her one defining habit: she will not overclaim.** Most findings on a young
+account come back "not enough data yet" and she says so plainly, in the chart
+marks as well as the words. Do not talk her out of that when you narrate the
+report — it is the whole point of her. `--plain` drops the voice entirely for
+scripts and for people who want a tool rather than a character.
 
 **All paths below are relative to this skill's own directory.**
 
@@ -50,6 +56,7 @@ python driver.py @handle --no-cluster --since 2026-01-01
 | `--scrolls N` / `--topics N` | How deep and how wide the research goes. Each costs real time. |
 | `--since YYYY-MM-DD` | Ignore older posts. |
 | `--narrative FILE` | JSON of written commentary to fold into the report — see below. |
+| `--plain` | Drop Raven's voice. Terse, parseable output. |
 | `--cookies FILE` | A signed-in session, for accounts with audience controls on. |
 
 ## Accounts you cannot read signed out
