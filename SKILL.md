@@ -1,5 +1,5 @@
 ---
-name: tiktok-content-analysis
+name: raven
 description: Raven analyses any public TikTok account and generates a 30-day content calendar. Use when asked to analyse, audit, review or research a TikTok account or creator, to build a TikTok or short-form content calendar or content plan, to find what themes and hooks work on an account, or to produce a TikTok performance report or PDF. Triggers include "analyse this tiktok account", "tiktok content calendar", "audit my tiktok", "what should I post", "content plan for @handle", "ask Raven", "run Raven on".
 user_invocable: true
 argument_hint: "@handle"
@@ -78,7 +78,7 @@ python driver.py --doctor
 
 The file is used by yt-dlp for the fast path and imported into camofox via
 `POST /sessions/:userId/cookies` for the browser path, so both tiers are signed
-in. Saved at `~/.tiktok-content-analysis/tiktok-cookies.txt` it is picked up
+in. Saved at `~/.raven/tiktok-cookies.txt` it is picked up
 without the flag.
 
 **Never log a user in and never ask for a password.** They export a session
@@ -112,7 +112,7 @@ next** and **The next 30 days**.
 
 ## What it writes
 
-Everything lands in `~/.tiktok-content-analysis/reports/<handle>/<timestamp>/`:
+Everything lands in `~/.raven/reports/<handle>/<timestamp>/`:
 
 | File | What it is |
 |---|---|
@@ -122,7 +122,7 @@ Everything lands in `~/.tiktok-content-analysis/reports/<handle>/<timestamp>/`:
 | `analysis.json` | Every computed figure. This is what you narrate from. |
 | `videos.csv` | The raw catalogue. |
 
-The account database is a single file at `~/.tiktok-content-analysis/tta.sqlite3`.
+The account database is a single file at `~/.raven/tta.sqlite3`.
 Re-running an account is incremental — it only fetches what is new.
 
 ## Writing the narration

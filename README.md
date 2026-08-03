@@ -50,7 +50,7 @@ Prefer a tool to a character? `--plain` turns the voice off everywhere.
 ## What you get
 
 Every run writes five files to
-`~/.tiktok-content-analysis/reports/<handle>/<timestamp>/`:
+`~/.raven/reports/<handle>/<timestamp>/`:
 
 | File | What it is |
 |---|---|
@@ -112,13 +112,13 @@ The location matters if you want the Claude skill trigger — it must go inside
 **macOS / Linux:**
 
 ```bash
-git clone https://github.com/mfmp112-karl/tiktok-content-analysis ~/.claude/skills/tiktok-content-analysis
+git clone https://github.com/mfmp112-karl/raven ~/.claude/skills/raven
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
-git clone https://github.com/mfmp112-karl/tiktok-content-analysis $HOME\.claude\skills\tiktok-content-analysis
+git clone https://github.com/mfmp112-karl/raven $HOME\.claude\skills\raven
 ```
 
 No git? Use the green **Code** button at the top of this page → **Download
@@ -144,7 +144,7 @@ python driver.py --doctor
 [  OK  ] yt-dlp                           installed
 [  OK  ] openpyxl                         installed
 [  OK  ] Chrome / Edge (for the PDF)      chrome.exe
-[  OK  ] Folder for your data             C:\Users\you\.tiktok-content-analysis
+[  OK  ] Folder for your data             C:\Users\you\.raven
 [  --  ] camofox stealth browser          not running
 [  --  ] Signed-in TikTok session         no cookie file configured
 [  --  ] last30days skill                 not installed
@@ -277,7 +277,7 @@ Pass it each time:
 python driver.py @handle --cookies /path/to/cookies.txt
 ```
 
-Or save it once at `~/.tiktok-content-analysis/tiktok-cookies.txt` and it is
+Or save it once at `~/.raven/tiktok-cookies.txt` and it is
 picked up automatically.
 
 ### 5. Check it worked
@@ -366,7 +366,7 @@ are installed, so they stay yours to update.
 ## Contact
 
 - **Bugs, questions, feature requests** —
-  [open an issue](https://github.com/mfmp112-karl/tiktok-content-analysis/issues).
+  [open an issue](https://github.com/mfmp112-karl/raven/issues).
 - **Anything else** — <themarketingfmpod317@gmail.com>
 
 Pull requests welcome. [LIMITATIONS.md](LIMITATIONS.md) doubles as the roadmap
@@ -375,8 +375,8 @@ and names the three changes worth making first.
 ## Licence
 
 [MIT](LICENSE) — free to use, modify and redistribute, including commercially.
-© 2026 Mbindyo Mutua. The calendar method it implements is
-themarketingfmpodcast's — see [LICENSE](LICENSE).
+© 2026 themarketingfmpodcast, whose 30-day calendar method Raven is built
+around.
 
 The credit line in the output is a courtesy the tool keeps for itself, not a
 condition of the licence. Keeping it costs you one line and is simply the

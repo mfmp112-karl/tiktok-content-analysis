@@ -12,8 +12,8 @@ Claude read Part 2 itself.
 ## The short version
 
 ```bash
-git clone https://github.com/mfmp112-karl/tiktok-content-analysis ~/.claude/skills/tiktok-content-analysis
-cd ~/.claude/skills/tiktok-content-analysis
+git clone https://github.com/mfmp112-karl/raven ~/.claude/skills/raven
+cd ~/.claude/skills/raven
 pip install yt-dlp openpyxl
 python driver.py --doctor
 ```
@@ -44,13 +44,13 @@ The clone *location* is what makes it a Claude skill. It must go inside
 `~/.claude/skills/`.
 
 ```bash
-git clone https://github.com/mfmp112-karl/tiktok-content-analysis ~/.claude/skills/tiktok-content-analysis
+git clone https://github.com/mfmp112-karl/raven ~/.claude/skills/raven
 ```
 
 On Windows in PowerShell, `~` works the same way:
 
 ```powershell
-git clone https://github.com/mfmp112-karl/tiktok-content-analysis $HOME\.claude\skills\tiktok-content-analysis
+git clone https://github.com/mfmp112-karl/raven $HOME\.claude\skills\raven
 ```
 
 If you would rather keep it somewhere else, clone wherever you like and run it
@@ -78,7 +78,7 @@ You should see something like this:
 [  OK  ] yt-dlp                           installed
 [  OK  ] openpyxl                         installed
 [  OK  ] Chrome / Edge (for the PDF)      chrome.exe
-[  OK  ] Folder for your data             C:\Users\you\.tiktok-content-analysis
+[  OK  ] Folder for your data             C:\Users\you\.raven
 [  --  ] camofox stealth browser          not running
 [  --  ] Signed-in TikTok session         no cookie file configured
 [  --  ] last30days skill                 not installed
@@ -96,7 +96,7 @@ python driver.py @someone
 
 A small account takes about 40 seconds without research, or 3–4 minutes with
 it. A 1,800-video account takes about 6 minutes. Everything lands in
-`~/.tiktok-content-analysis/reports/<handle>/<timestamp>/` and opens
+`~/.raven/reports/<handle>/<timestamp>/` and opens
 automatically when it finishes.
 
 ## The optional extras, and what each one buys you
@@ -134,7 +134,7 @@ It should start with `# Netscape HTTP Cookie File`.
 python driver.py @handle --cookies /path/to/cookies.txt
 ```
 
-Or save it as `~/.tiktok-content-analysis/tiktok-cookies.txt` to skip the flag.
+Or save it as `~/.raven/tiktok-cookies.txt` to skip the flag.
 
 **5. Confirm:** `python driver.py --doctor` will show either a working session
 with days remaining, an expired one, or a file exported while signed out.
@@ -154,7 +154,7 @@ avoids the wrapper entirely.
 
 ## What it does to your machine
 
-- Creates **one folder**: `~/.tiktok-content-analysis/`. One SQLite file for
+- Creates **one folder**: `~/.raven/`. One SQLite file for
   the accounts you analyse, one folder per report. Delete it and every trace of
   the tool's data is gone.
 - Writes **nothing** anywhere else, and **uploads nothing anywhere**.
@@ -199,7 +199,7 @@ cheerleading, and never soften an undecided finding into a decided one.
 
 | Action | Ask first? | Why |
 |---|---|---|
-| Creating `~/.tiktok-content-analysis/` | **Yes, once** | It is a new folder in their home directory. Say what goes in it and that deleting it removes everything. |
+| Creating `~/.raven/` | **Yes, once** | It is a new folder in their home directory. Say what goes in it and that deleting it removes everything. |
 | `pip install yt-dlp openpyxl` | **Yes** | Installing packages into their environment is their call. Offer the command; let them run it or approve it. |
 | Running `driver.py @handle` | No | Reads public pages only. |
 | Starting the camofox server | **Yes** | It launches a background browser process and, on first use, downloads ~300MB. |

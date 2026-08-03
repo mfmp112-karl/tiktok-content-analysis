@@ -15,12 +15,37 @@ from datetime import datetime
 from pathlib import Path
 
 #: Override for tests, or for anyone who wants the data somewhere else.
-ENV_HOME = "TTA_HOME"
+#: TTA_HOME is the old name and still works — it predates the tool being called
+#: Raven, and silently ignoring it would strand anyone who had scripted it.
+ENV_HOME = "RAVEN_HOME"
+ENV_HOME_LEGACY = "TTA_HOME"
+
+DIR_NAME = ".raven"
+DIR_NAME_LEGACY = ".tiktok-content-analysis"
 
 
 def home() -> Path:
-    override = os.getenv(ENV_HOME)
-    return Path(override).expanduser() if override else Path.home() / ".tiktok-content-analysis"
+    """Where the data lives.
+
+    The directory was called `.tiktok-content-analysis` before the tool was
+    named. New installs get `.raven`, but an existing directory keeps being
+    used rather than being abandoned with someone's analysis history inside
+    it — a rename that silently orphans data is not a rename, it is a loss.
+    """
+    for var in (ENV_HOME, ENV_HOME_LEGACY):
+        override = os.getenv(var)
+        if override:
+            return Path(override).expanduser()
+
+    new = Path.home() / DIR_NAME
+    legacy = Path.home() / DIR_NAME_LEGACY
+    if not new.exists() and legacy.exists():
+        return legacy
+    return new
+
+
+def using_legacy_home() -> bool:
+    return home().name == DIR_NAME_LEGACY
 
 
 def db_path() -> Path:

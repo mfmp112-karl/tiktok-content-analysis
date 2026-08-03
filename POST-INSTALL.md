@@ -11,7 +11,7 @@ python driver.py --doctor
 - [ ] **Python 3.10 or newer.** Check with `python --version`.
 - [ ] **Two packages.** `pip install yt-dlp openpyxl` — that is the whole list.
 - [ ] **Permission to create a folder.** This tool writes to
-      `~/.tiktok-content-analysis/` and nowhere else: one SQLite file for the
+      `~/.raven/` and nowhere else: one SQLite file for the
       accounts you analyse, and one folder per report. Deleting that directory
       removes every trace of it. Nothing is written next to your other work,
       and nothing is uploaded anywhere.

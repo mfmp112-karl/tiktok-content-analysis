@@ -77,7 +77,9 @@ def doctor() -> int:
         writable = True
     except OSError:
         writable = False
-    rows.append(("Folder for your data", writable, True, paths.describe(),
+    rows.append(("Folder for your data", writable, True,
+                 paths.describe() + ("  (pre-rename folder, still in use)"
+                                     if paths.using_legacy_home() else ""),
                  "This tool needs permission to create that folder. Everything "
                  "it stores lives there and nowhere else."))
 
