@@ -124,7 +124,18 @@ git clone https://github.com/mfmp112-karl/raven $HOME\.claude\skills\raven
 No git? Use the green **Code** button at the top of this page → **Download
 ZIP**, unzip it, and put the folder in that same place.
 
-### Step 3 — Install the two dependencies
+### Step 3 — Let it set itself up
+
+```bash
+python driver.py --setup --yes
+```
+
+That installs the two Python packages, installs and starts camofox if you have
+Node.js, and creates your data folder — then prints the short list of things
+only a human can do. Run it without `--yes` to see what it *would* install
+first.
+
+Doing it by hand instead is two commands:
 
 ```bash
 pip install yt-dlp openpyxl

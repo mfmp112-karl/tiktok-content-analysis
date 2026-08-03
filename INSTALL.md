@@ -14,9 +14,22 @@ Claude read Part 2 itself.
 ```bash
 git clone https://github.com/mfmp112-karl/raven ~/.claude/skills/raven
 cd ~/.claude/skills/raven
-pip install yt-dlp openpyxl
-python driver.py --doctor
+python driver.py --setup --yes
 ```
+
+`--setup` installs the Python packages, installs camofox if Node is present,
+starts it, and creates your data folder. Then it prints the short list of
+things only you can do — installing a browser extension, making an account —
+because those need a human at a keyboard.
+
+Add `--with-session` if you already know you need to read an account with
+audience controls switched on:
+
+```bash
+python driver.py --setup --yes --with-session
+```
+
+Leave off `--yes` and it tells you what it *would* install without doing it.
 
 Then, in Claude Code, say:
 
@@ -190,14 +203,44 @@ needs acting on. `--plain` silences her.
 When you narrate her report, keep her register: no exclamation marks, no
 cheerleading, and never soften an undecided finding into a decided one.
 
+## Setting it up: do your half, hand over theirs
+
+The work splits cleanly by *who can do it*, and sorting it that way is the
+whole trick. Run `python driver.py --setup` and it does the same split for you.
+
+**Yours to do** — after asking once, since it is their machine:
+
+| Task | Command |
+|---|---|
+| Install the Python packages | `pip install yt-dlp openpyxl` |
+| Install camofox | `npm install @askjo/camofox-browser` in `~/.camofox-browser` |
+| Start the camofox server | `node ~/.camofox-browser/node_modules/@askjo/camofox-browser/server.js` |
+| Create their data folder | happens on first run |
+| Verify the lot | `python driver.py --doctor` |
+
+`python driver.py --setup --yes` does all of it in one go.
+
+**Theirs to do** — you cannot, and in two cases you must not:
+
+| Task | Why it is theirs |
+|---|---|
+| Install Python or Node | An OS installer with a PATH checkbox. |
+| Make a new browser profile | Browser UI. |
+| **Make an email and a TikTok account** | **Never create accounts for someone.** Give them the steps and wait. |
+| Install the cookies.txt extension | A click in the Chrome Web Store. Point them at the listing. |
+| **Sign in and export cookies** | **Never type someone's password.** |
+
+`--with-session` prints these with the reasoning attached. Relay them; do not
+try to route around them.
+
 ## On first invocation, always
 
 1. **Run `python driver.py --doctor` and show the user the output.** Do not
    skip it and do not summarise it away. The optional items materially change
    how complete the report is, and the user should decide whether to install
    any of them before waiting several minutes for a run.
-2. **If required items are missing**, give the user the exact fix line the
-   doctor printed. Do not install anything on their behalf without asking.
+2. **If required items are missing**, offer `--setup --yes` and let them
+   approve it. Do not install anything on their behalf without asking.
 3. **If optional items are missing**, say in one sentence what each one would
    add, then ask whether to proceed without them or wait. Do not editorialise
    further — most people will want to proceed.

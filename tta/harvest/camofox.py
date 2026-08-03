@@ -43,6 +43,10 @@ USER_ID = "tta"
 OPEN_ATTEMPTS = 4
 SETTLE_POLLS = 8
 SETTLE_GAP = 2.5
+#: How many browser restarts a single harvest will ride out before stopping.
+#: camofox restarts on a timer when its health probe fails, which on a
+#: mismatched install is every few minutes, so this needs to be more than one.
+MAX_RECOVERIES = 4
 
 
 class CamofoxError(RuntimeError):
@@ -314,7 +318,6 @@ CARDS_JS = """
       text: (alt || card.innerText || '').slice(0, 300)
     });
   });
-  out.walled = walled;
   return out;
 })()
 """
@@ -443,19 +446,35 @@ def scroll_harvest(url: str, *, max_scrolls: int = 30, settle: float = 1.6,
     """
     tab = None
     seen: dict[str, dict] = {}
+    recoveries = 0
     try:
         tab = open_url(url, settle=4.0, log=log)
         stagnant = 0
         for i in range(max_scrolls):
             try:
                 cards = evaluate(tab, CARDS_JS) or []
-            except BrowserRestarted:
+            except (BrowserRestarted, CamofoxError) as exc:
+                # camofox restarts its browser on a timer when its own health
+                # probe fails, and anything in flight at that moment comes back
+                # as a 500 rather than as `browser_restarted`. Both mean the
+                # same thing — the tab is gone — so both are recovered the same
+                # way. Abandoning the harvest here threw away every card
+                # already collected, which is how an entire research step ended
+                # up empty because of a three-minute restart cycle.
+                if recoveries >= MAX_RECOVERIES:
+                    log(f"    giving up after {recoveries} browser restarts "
+                        f"({len(seen)} cards kept)")
+                    break
+                recoveries += 1
+                log(f"    browser went away ({exc}); reopening "
+                    f"[{recoveries}/{MAX_RECOVERIES}]")
                 close_tab(tab)
-                tab = open_url(url, settle=4.0, log=log)
+                time.sleep(3)
+                try:
+                    tab = open_url(url, settle=4.0, log=log)
+                except CamofoxError:
+                    break
                 continue
-            except CamofoxError as exc:
-                log(f"    card read failed: {exc}")
-                break
 
             before = len(seen)
             for card in cards:
@@ -475,7 +494,10 @@ def scroll_harvest(url: str, *, max_scrolls: int = 30, settle: float = 1.6,
             if stagnant >= stop_after_stagnant:
                 log(f"    feed exhausted after {i + 1} scrolls ({len(seen)} cards)")
                 break
-            scroll(tab)
+            try:
+                scroll(tab)
+            except Exception:
+                pass          # the next evaluate will notice and recover
             time.sleep(settle)
         return list(seen.values())
     except CamofoxError as exc:

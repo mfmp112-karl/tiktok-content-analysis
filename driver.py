@@ -30,7 +30,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from tta import __version__, attribution, console, paths, store, voice   # noqa: E402
+from tta import (__version__, attribution, console, paths, setup,   # noqa: E402
+                 store, voice)
 from tta.analyse import (aggregates as ag, cadence, hooks, profile_audit,  # noqa: E402
                          themes)
 from tta.calendar import build as calbuild, recommend, workbook                     # noqa: E402
@@ -449,6 +450,12 @@ def main(argv: list[str]) -> int:
         prog="driver.py",
         description="Analyse a public TikTok account and build a 30-day content calendar.")
     ap.add_argument("handle", nargs="?", help="e.g. @someone, or a profile URL")
+    ap.add_argument("--setup", action="store_true",
+                    help="guided setup: installs what it can, tells you the rest")
+    ap.add_argument("--yes", action="store_true",
+                    help="with --setup, allow installing packages without asking")
+    ap.add_argument("--with-session", action="store_true",
+                    help="with --setup, also walk through the signed-in session")
     ap.add_argument("--help-session", action="store_true",
                     help="explain how to set up a signed-in session")
     ap.add_argument("--doctor", action="store_true",
@@ -481,6 +488,9 @@ def main(argv: list[str]) -> int:
     args = ap.parse_args(argv[1:])
     if args.plain:
         voice.set_plain(True)
+
+    if args.setup:
+        return setup.run(assume_yes=args.yes, want_session=args.with_session)
 
     if args.help_session:
         print()

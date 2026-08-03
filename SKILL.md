@@ -215,6 +215,20 @@ These all cost real time to discover.
   is_filmable_question` drops launches, link-dumps, promos and titles ending in
   a parenthesised year, and requires an actual question shape.
 
+- **camofox restarts its browser on a timer when its own health probe fails.**
+  On a mismatched install that is every ~3 minutes, and anything in flight
+  comes back as a plain HTTP 500 rather than `browser_restarted` — so treat a
+  500 from `/evaluate` as "the tab is gone", reopen and carry on. Abandoning
+  the harvest there throws away every card already collected.
+
+- **The mismatch itself:** `camoufox-js` declares `peerDependencies:
+  {"playwright-core": "*"}`, so npm installs whatever is newest. If that
+  Playwright's Juggler sends a viewport property the installed Camoufox build
+  does not declare — `viewport.isMobile` is the one seen here — every
+  `newContext` fails and the restart loop never stops. It is a version pairing
+  problem, not a missing Firefox: Camoufox *is* a Firefox build and ships its
+  own binary.
+
 - **Two runs at once used to deadlock.** The database is opened WAL with a
   60-second busy timeout, which fixes it — but a database created by an older
   version stays in rollback mode, and the conversion can only happen when no
