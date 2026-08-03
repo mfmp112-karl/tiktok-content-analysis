@@ -109,6 +109,39 @@ automatically when it finishes.
 | **A signed-in TikTok session** | Accounts that have audience controls switched on. | Only if you hit one. Run `python driver.py --help-session`. |
 | **`sentence-transformers`** | Marginally better theme clustering. | Skip it unless you are analysing very large accounts. It is a ~2GB download. |
 
+### Setting up a signed-in session (only if you hit a blocked account)
+
+Some creators switch on **audience controls**, which makes TikTok serve their
+profile only to signed-in visitors. You will know because the run stops and
+tells you so.
+
+**1. Make a throwaway TikTok account.** Not your main one. The export below is
+a credential, and automated reading can get an account rate-limited. A spare
+email is all it needs — no posts, no picture, no followers.
+
+**2. Install a cookie export extension.** Search the Chrome Web Store for
+"Get cookies.txt LOCALLY", or addons.mozilla.org for "cookies.txt" on Firefox.
+Read the permissions first: these can read cookies for every site by design,
+so prefer one that is open-source and works offline.
+
+**3. Sign in as the throwaway account, stay on a tiktok.com page, click the
+extension, and export.** Save the file somewhere private — not in this repo.
+It should start with `# Netscape HTTP Cookie File`.
+
+**4. Point the tool at it:**
+
+```bash
+python driver.py @handle --cookies /path/to/cookies.txt
+```
+
+Or save it as `~/.tiktok-content-analysis/tiktok-cookies.txt` to skip the flag.
+
+**5. Confirm:** `python driver.py --doctor` will show either a working session
+with days remaining, an expired one, or a file exported while signed out.
+
+Full detail, including what the tool does and does not do with the file, is in
+the [README](README.md#accounts-that-need-a-login).
+
 ### Starting camofox
 
 ```bash

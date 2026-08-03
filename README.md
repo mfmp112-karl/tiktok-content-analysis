@@ -1,127 +1,362 @@
 # TikTok Content Analysis
 
-Point it at a public TikTok account. Get back a report that explains what has
+Point it at a public TikTok account. Get back a report explaining what has
 actually worked on that account, and a 30-day content calendar built from it.
 
-No API key. No account. No paid service. Nothing leaves your machine except the
-requests needed to read public pages.
+**Free. Local. No API key, no account, no subscription.** Two Python packages
+and a browser you already have. Nothing is uploaded anywhere.
 
-```bash
-git clone https://github.com/mfmp112-karl/tiktok-content-analysis ~/.claude/skills/tiktok-content-analysis
-cd ~/.claude/skills/tiktok-content-analysis
-pip install yt-dlp openpyxl
-python driver.py --doctor
-python driver.py @someone
-```
+**→ [See a sample report](examples/sample-report/sample-report.pdf)** before
+installing anything. It is built from invented data for a made-up account, so
+you can see exactly what you get.
+([HTML version](examples/sample-report/sample-report.html) ·
+[the calendar it produces](examples/sample-report/sample-calendar.xlsx))
 
-If you use Claude Code, that clone location makes it a skill — say
-*"analyse this tiktok account for me and generate a content calendar"* and it
-runs itself.
+---
+
+## Contents
+
+- [What you get](#what-you-get)
+- [Install it](#install-it) — step by step, nothing assumed
+- [Use it](#use-it)
+- [Optional extras](#optional-extras)
+- [Accounts that need a login](#accounts-that-need-a-login) — throwaway account and cookies, in full
+- [What it cannot tell you](#what-it-cannot-tell-you)
+- [Limits and roadmap](LIMITATIONS.md)
+- [Please use this well](#please-use-this-well)
+- [Credits](#credits) · [Contact](#contact) · [Licence](#licence)
 
 ---
 
 ## What you get
 
-Written to `~/.tiktok-content-analysis/reports/<handle>/<timestamp>/`:
+Every run writes five files to
+`~/.tiktok-content-analysis/reports/<handle>/<timestamp>/`:
 
-- **`report.pdf`** — A4, charted, with the account, the session it was read
-  through, and the date on the cover.
-- **`report.html`** — the same document in any browser.
-- **`calendar.xlsx`** — thirty dated rows on a five-day rotation, with a hook
-  library and a progress tracker. Columns for your caption, platform and a tick
-  when it goes out.
-- **`analysis.json`** and **`videos.csv`** — everything computed, nothing locked in.
+| File | What it is |
+|---|---|
+| **`report.pdf`** | The report. A4, charted, ready to print or send. |
+| `report.html` | The same document, opens in any browser. |
+| **`calendar.xlsx`** | 30 dated rows on a five-day rotation. Six tabs including a hook library and a progress tracker. Columns left blank for your caption, platform, and a tick when it goes out. |
+| `analysis.json` | Every computed figure. Nothing is hidden in the PDF. |
+| `videos.csv` | The raw catalogue. |
 
-## What it actually does
+### What is in the report
 
-1. **Reads the catalogue** with `yt-dlp`, which returns views, likes, comments,
-   shares, caption, duration and upload time for every public post without
-   downloading anything.
-2. **Reads the profile** — follower count, bio, avatar — through the camofox
-   stealth browser, if you have it.
-3. **Finds the themes** by clustering the captions, rather than guessing from
-   keywords. The number of themes adapts to the size of the account.
-4. **Tests everything.** Every split — theme, day, hour, length, caption
-   feature — is checked with Welch's t-test on log-transformed views. Findings
-   are labelled *solid evidence*, *early signal*, or *not enough data yet*.
-5. **Checks the niche** by reading TikTok's own hashtag and search pages through
-   camofox, and peer bios to see how others position themselves.
-6. **Asks what the niche is asking** through the `last30days` skill — Reddit,
-   Hacker News and the web. A question somebody actually typed out is the best
-   content prompt there is.
-7. **Recommends what to make**, as a numbered list ordered by how much evidence
-   sits behind each item: double down on what already travels, rework what
-   demonstrably does not, answer the questions people are asking, and try the
-   one or two things the niche is doing that this account has never touched.
-8. **Builds the calendar** from the account's own strongest themes and its own
-   best-performing openings.
+| Section | What it answers |
+|---|---|
+| Cover | Which account, read through which session, when, by what version. |
+| At a glance | The shape of the account — and what this report *cannot* tell you. |
+| **What to make next** | A numbered list of specific things to film, ordered by evidence. |
+| Reach and trajectory | Where it is heading, month by month. |
+| What this account is about | Themes discovered from the captions, with a **Keep / Ditch / Test more / Try** call on each. |
+| Who you are talking to | Profile audit, and how accounts around you position themselves. |
+| Hooks and captions | Which caption features travel, and whether your openings have gone templated. |
+| Timing and consistency | Best day and hour, and whether posting more has actually helped *you*. |
+| What the niche is talking about | Demand signal, and questions people are asking right now. |
+| **The next 30 days** | The calendar. |
+| The frameworks behind this | The creator playbook, stated so you can use it without the report. |
+| Method, limits and credits | How every number was produced. |
 
 ### The part most tools skip
 
 Almost every finding on a young account comes back **"not enough data yet"**,
-and this report says so, loudly, in the chart marks themselves. A theme drawn
-from nine posts is drawn as an outline, not a solid bar.
+and this report says so — loudly, in the chart marks themselves. A theme drawn
+from nine posts is drawn as an outline, not a solid bar. Where possible it also
+tells you **how many more posts would settle it**.
 
-That is deliberate. A confident-looking report built on six posts will send
-someone off to change the thing that was working. Groups under eight posts are
-never called significant here, however large the gap looks.
+That is deliberate. A confident-looking report built on six posts sends people
+off to change the thing that was working. Groups under eight posts are never
+called significant here, however large the gap looks.
 
-## Requirements
+---
 
-**Required:** Python 3.10+, and `pip install yt-dlp openpyxl`. That is the
-entire dependency list.
+## Install it
 
-**Optional, and each one just makes the report fuller:**
+### Step 1 — Check Python
 
-| | Adds |
+```bash
+python --version
+```
+
+Needs **3.10 or newer**. If it says 3.9, "command not found", or nothing at
+all, install it from [python.org/downloads](https://www.python.org/downloads/).
+
+> **Windows:** tick **"Add python.exe to PATH"** on the first screen of the
+> installer. Skipping it is the single most common reason step 3 fails.
+
+### Step 2 — Download it
+
+The location matters if you want the Claude skill trigger — it must go inside
+`~/.claude/skills/`.
+
+**macOS / Linux:**
+
+```bash
+git clone https://github.com/mfmp112-karl/tiktok-content-analysis ~/.claude/skills/tiktok-content-analysis
+```
+
+**Windows (PowerShell):**
+
+```powershell
+git clone https://github.com/mfmp112-karl/tiktok-content-analysis $HOME\.claude\skills\tiktok-content-analysis
+```
+
+No git? Use the green **Code** button at the top of this page → **Download
+ZIP**, unzip it, and put the folder in that same place.
+
+### Step 3 — Install the two dependencies
+
+```bash
+pip install yt-dlp openpyxl
+```
+
+That is the entire dependency list. If `pip` is not found, use
+`python -m pip install yt-dlp openpyxl`.
+
+### Step 4 — Check everything
+
+```bash
+python driver.py --doctor
+```
+
+```
+[  OK  ] Python 3.10+                     3.12.10
+[  OK  ] yt-dlp                           installed
+[  OK  ] openpyxl                         installed
+[  OK  ] Chrome / Edge (for the PDF)      chrome.exe
+[  OK  ] Folder for your data             C:\Users\you\.tiktok-content-analysis
+[  --  ] camofox stealth browser          not running
+[  --  ] Signed-in TikTok session         no cookie file configured
+[  --  ] last30days skill                 not installed
+[  --  ] sentence-transformers            not installed
+```
+
+**`[  --  ]` means optional — the tool works without every one of them.** Only
+`MISSING` blocks you, and each missing line prints the exact command that fixes
+it.
+
+---
+
+## Use it
+
+### From the command line
+
+```bash
+python driver.py @someone
+```
+
+That is the whole thing. It prints progress at each of six steps and opens the
+report when it finishes.
+
+| How big | Roughly how long |
 |---|---|
-| Chrome, Edge, Chromium or Brave | A proper vector PDF. Without one you still get the HTML, and camofox can produce a raster PDF. |
-| [camofox-browser](https://github.com/yelban/camofox-browser) (Node 18+) | Follower count, profile audit, niche research. |
-| [last30days](https://github.com/mvanhorn/last30days-skill) | Reddit, Hacker News, GitHub and web signal. |
-| `sentence-transformers` | Slightly better theme clustering. Large download; the built-in method is fine. |
+| ~100 videos, no research | 40 seconds |
+| ~100 videos, full research | 3–4 minutes |
+| ~1,800 videos | 6 minutes |
 
-`python driver.py --doctor` tells you exactly which of these you have.
+### From Claude
+
+If you cloned into `~/.claude/skills/`, just say:
+
+> analyse this tiktok account for me and generate a content calendar — @someone
+
+Claude reads [INSTALL.md](INSTALL.md), which tells it to run the doctor first,
+show you the result, and ask before doing anything that needs your permission.
+
+### Useful flags
+
+```bash
+python driver.py @handle --no-research
+python driver.py @handle --no-cluster
+python driver.py @handle --cap 2000 --attempts 4
+python driver.py @handle --since 2026-01-01
+python driver.py @handle --cookies path/to/cookies.txt
+python driver.py --help
+```
+
+Re-running an account is **incremental** — it only fetches what is new.
+
+---
+
+## Optional extras
+
+Each of these adds something. None are required.
+
+| Extra | What it adds | Worth installing? |
+|---|---|---|
+| **Chrome / Edge / Chromium / Brave** | A proper vector PDF. | You almost certainly have one already. Edge ships with Windows. Without any of them you still get the full HTML report. |
+| **[camofox-browser](https://github.com/yelban/camofox-browser)** (Node 18+) | Follower count, the profile audit, and the niche research pages. | **The biggest single upgrade** — roughly half the report. |
+| **[last30days](https://github.com/mvanhorn/last30days-skill)** | What people are *asking* about your niche on Reddit, Hacker News and the web. | Strong for tech and business niches, thinner for beauty, fitness and lifestyle. |
+| **`sentence-transformers`** | Marginally better theme grouping. | Skip it. ~2GB download, and the built-in method works fine. |
+
+Starting camofox once installed:
+
+```bash
+node ~/.camofox-browser/node_modules/@askjo/camofox-browser/server.js
+```
+
+Leave that running in its own terminal. On Windows, the camofox skill's own
+`camofox.sh` needs Git Bash or WSL — the command above skips the wrapper.
+
+---
+
+## Accounts that need a login
+
+Some creators switch on **audience controls**. TikTok then serves their profile
+only to signed-in visitors: follower counts render as `-`, the video grid is
+empty, and `yt-dlp` fails with `Unable to extract secondary user ID`.
+
+**This is a permission, not a bot block.** No tool gets past it signed out. The
+tool detects it and tells you, rather than reporting the account as private.
+
+The fix is to give it a signed-in session. Here is the whole process.
+
+### 1. Make a throwaway TikTok account
+
+**Do not use your main account.** Two reasons, both real:
+
+- The file you are about to export is a **credential**. Anyone who gets hold of
+  it is signed in as that account.
+- Automated reading can get an account **rate-limited or restricted** by
+  TikTok. Risk that on an account you do not care about.
+
+Sign up at [tiktok.com](https://www.tiktok.com) with a spare email. It needs no
+posts, no profile picture and no followers — it only ever reads.
+
+### 2. Install a cookie export extension
+
+Any "cookies.txt" extension will do.
+
+- **Chrome / Edge / Brave** — search the
+  [Chrome Web Store](https://chromewebstore.google.com/) for
+  **"Get cookies.txt LOCALLY"**.
+- **Firefox** — search [addons.mozilla.org](https://addons.mozilla.org/) for
+  **"cookies.txt"**.
+
+> Read the reviews and the requested permissions before installing. These
+> extensions can read your cookies for **every** site by design, which is
+> exactly why you want one that is open-source and works offline. A cookie
+> exporter that phones home is the last thing you want.
+
+### 3. Sign in and export
+
+1. Sign into **the throwaway account** at [tiktok.com](https://www.tiktok.com).
+2. Stay on a tiktok.com page.
+3. Click the extension's icon.
+4. Choose **Export** / **Save as cookies.txt** for the current site.
+5. Save the file somewhere private — **not** inside this repo.
+
+The file is plain text and starts with `# Netscape HTTP Cookie File`.
+
+### 4. Point the tool at it
+
+Pass it each time:
+
+```bash
+python driver.py @handle --cookies /path/to/cookies.txt
+```
+
+Or save it once at `~/.tiktok-content-analysis/tiktok-cookies.txt` and it is
+picked up automatically.
+
+### 5. Check it worked
+
+```bash
+python driver.py --doctor
+```
+
+```
+[  OK  ] Signed-in TikTok session    41 TikTok cookies, signed in, 21.0 days left
+```
+
+You will see one of three things: it is working, **the session has expired**
+(sign in again and re-export), or **no sessionid found** (you exported while
+signed out).
+
+### What the tool does and does not do with it
+
+- It **never asks for a password** and **never logs anybody in**. You
+  authenticate in your own browser; the tool only reads a file that already
+  exists.
+- It **never prints a cookie value.** The doctor reports names, counts and days
+  remaining, nothing more.
+- It **never copies or uploads the file.** The path is read at run time, and
+  that is all.
+- Sessions expire. When one does the doctor says so — which matters, because an
+  expired session and a private account look identical otherwise.
+
+`*cookies*.txt` is in `.gitignore` as a backstop, but keep the file outside the
+repo anyway.
+
+---
 
 ## What it cannot tell you
 
-Watch time, retention curves, traffic sources, follower growth over time and
-audience demographics are served by TikTok **only to the account owner**, inside
-their own analytics. No tool can get them for an account it does not own, and
-any tool claiming otherwise is guessing.
+**Watch time, retention curves, average view duration, traffic sources,
+follower growth over time and audience demographics** are served by TikTok
+**only to the account owner**, inside their own analytics.
 
-Where common creator advice depends on those numbers, this tests what it *can*
-measure and says which is which.
+No tool can get them for an account it does not own. Anything claiming
+otherwise is guessing.
+
+A great deal of creator advice is *about* watch time. Where that is true, this
+tests what it can actually measure and says which is which, rather than
+substituting a proxy and hoping you do not notice.
+
+There is a fuller accounting in **[LIMITATIONS.md](LIMITATIONS.md)** —
+including what is simply not built yet, and what it would take to fix each one.
+
+---
 
 ## Please use this well
 
-I built this to help people grow their accounts meaningfully — by understanding
+This exists to help people grow their accounts meaningfully — by understanding
 what they have already made, and deciding what to make next.
 
-It reads public data only. It takes nothing TikTok does not show any logged-out
-visitor. It automates no engagement of any kind: no following, no liking, no
-commenting, no messaging, no posting.
+It reads **public data only**. It takes nothing TikTok does not show any
+logged-out visitor. It automates **no engagement whatsoever**: no posting,
+following, liking, commenting or messaging.
 
-Please do not use it to harass, impersonate, or target anyone, to scrape private
+Please do not use it to harass, impersonate or target anyone, to scrape private
 accounts, or to build profiles of private individuals. If you are analysing
-someone else's account, do it as competitive research — the way you would read a
-competitor's public website — not as surveillance of a person.
+somebody else's account, treat it as competitive research — the way you would
+read a competitor's public website — not as surveillance of a person.
+
+---
 
 ## Credits
 
-- **The 30-day calendar method** — the five post types and the five-day
-  rotation — is **themarketingfmpodcast**'s. Every file this tool writes carries
+- **The 30-day content calendar method** — the five post types and the five-day
+  rotation this tool is built around — is
+  **[themarketingfmpodcast](https://www.instagram.com/marketingfmpodcastke)**'s
+  work. Every file the tool writes carries
   `themarketingfmpodcast - Free Tool, Share it.`
-- **The creator growth playbook** the profile audit and content-style checks are
-  built on is **@teezytheturtle**'s.
-- **[camofox-browser](https://github.com/yelban/camofox-browser)** (MIT, © yelban)
-  for stealth browsing.
-- **[last30days](https://github.com/mvanhorn/last30days-skill)** (MIT, mvanhorn)
-  for cross-platform research.
+- **The creator growth playbook** behind the profile audit and the
+  content-style analysis is
+  **[@teezytheturtle](https://www.instagram.com/teezytheturtle)**'s.
+- **[camofox-browser](https://github.com/yelban/camofox-browser)** (MIT,
+  © yelban) — stealth browsing.
+- **[last30days](https://github.com/mvanhorn/last30days-skill)** (MIT,
+  mvanhorn) — cross-platform research.
 
-Neither camofox nor last30days is vendored here — this talks to them if they are
-installed, so they stay yours to update.
+Neither camofox nor last30days is bundled here. The tool talks to them if they
+are installed, so they stay yours to update.
+
+## Contact
+
+- **Bugs, questions, feature requests** —
+  [open an issue](https://github.com/mfmp112-karl/tiktok-content-analysis/issues).
+- **Anything else** — <themarketingfmpod317@gmail.com>
+
+Pull requests welcome. [LIMITATIONS.md](LIMITATIONS.md) doubles as the roadmap
+and names the three changes worth making first.
 
 ## Licence
 
-MIT, with one added condition: the attribution line must stay in the output.
-See [LICENSE](LICENSE).
+[MIT](LICENSE) — free to use, modify and redistribute, including commercially.
+© 2026 themarketingfmpodcast.
+
+The credit line in the output is a courtesy the tool keeps for itself, not a
+condition of the licence. Keeping it costs you one line and is simply the
+decent thing to do.

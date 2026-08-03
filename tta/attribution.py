@@ -31,6 +31,17 @@ CREDITS = (
     ("Cross-platform research", "last30days (MIT, mvanhorn)"),
 )
 
+#: Where to find the people credited above. Kept out of CREDITS so the digest
+#: covers the credit itself rather than a URL that may change.
+LINKS = {
+    "themarketingfmpodcast": "https://www.instagram.com/marketingfmpodcastke",
+    "@teezytheturtle": "https://www.instagram.com/teezytheturtle",
+    "camofox-browser (MIT, (c) yelban)": "https://github.com/yelban/camofox-browser",
+    "last30days (MIT, mvanhorn)": "https://github.com/mvanhorn/last30days-skill",
+}
+
+CONTACT = "themarketingfmpod317@gmail.com"
+
 #: sha256 over TAG + CREDITS in canonical form. Regenerating this by hand is the
 #: point at which you should be reading LICENSE instead.
 _DIGEST = "f876c9778257d9c75024217bf02e862021c2defd48ea646d764e7429cef1de69"
