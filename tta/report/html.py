@@ -274,18 +274,11 @@ def _cover(ctx: dict) -> str:
   </div>
 
   <div class="notice">
-    <strong>What this is for.</strong> This was built to help people grow their
-    accounts meaningfully — by understanding what they have already published and
-    deciding what to make next. It reads public data only, takes nothing that
-    TikTok does not show any logged-out visitor, and automates no engagement of
-    any kind. Please do not use it to harass, impersonate, or target anyone.
+    <strong>What this is for.</strong> {esc(voice.report("cover.ethics"))}
   </div>
 
   <hr class="rule">
-  {_prose(ctx.get('narrative'), 'summary',
-          "The pages that follow move from what this account is, to what has "
-          "worked, to what to post next. Every finding carries a note on how "
-          "much evidence sits behind it — read those as carefully as the numbers.")}
+  {_prose(ctx.get('narrative'), 'summary', voice.report("cover.intro"))}
 
   <footer><span>{esc(attribution.stamp_footer())}</span>
           <span>@{esc(meta['handle'])} &nbsp;·&nbsp; {esc(meta['generated'])}</span></footer>
@@ -310,7 +303,7 @@ def _at_a_glance(ctx: dict) -> str:
     return f"""
 <section class="page">
   <h2>At a glance</h2>
-  <p class="sub">The shape of the account before any interpretation.</p>
+  <p class="sub">{esc(voice.report("glance.sub"))}</p>
   <div class="figures">{fig_html}</div>
   {_prose(ctx.get('narrative'), 'glance')}
 
@@ -321,7 +314,7 @@ def _at_a_glance(ctx: dict) -> str:
      <strong>{cad['gaps']['longest_streak']}</strong>. Longest silence:
      <strong>{cad['gaps']['longest_gap']} days</strong>.</p>
 
-  <h3>What this report cannot tell you</h3>
+  <h3>{esc(voice.report("glance.limits"))}</h3>
   <p class="sub">{esc(voice.cannot_measure())}</p>
   <ul>{limit_items}</ul>
 
@@ -337,7 +330,7 @@ def _reach(ctx: dict) -> str:
     return f"""
 <section class="page">
   <h2>Reach and trajectory</h2>
-  <p class="sub">Where the account is heading, month by month.</p>
+  <p class="sub">{esc(voice.report("reach.sub"))}</p>
   {charts.trend_line(monthly, title="Average views per post, by month")}
   {charts.volume_bars(monthly, title="Posts published per month",
                       label_key="month", value_key="posts")}
@@ -378,7 +371,7 @@ def _themes(ctx: dict) -> str:
     return f"""
 <section class="page">
   <h2>What this account is about</h2>
-  <p class="sub">Themes discovered from the captions themselves, not chosen in advance.</p>
+  <p class="sub">{esc(voice.report("themes.sub"))}</p>
   {charts.donut(rows, title="Share of posts by theme")}
   {charts.legend_note()}
   {charts.index_bars(rows, title="Reach by theme, against this account's own average")}
@@ -386,13 +379,12 @@ def _themes(ctx: dict) -> str:
   <p class="sub">{method_note}</p>
   {_table(["Theme", "Posts", "Share", "Avg views", "vs average", "Evidence", "Call"],
           table_rows)}
-  <h3>How to read the call</h3>
-  <p><span class="pill keep">Keep</span> beats the account average with evidence behind it.
-     <span class="pill ditch">Ditch</span> trails the average with evidence behind it.
-     <span class="pill test">Test more</span> looks promising or poor but rests on too
-     few posts to judge — the honest answer for most themes on most accounts.
-     <span class="pill replace">Try</span> is a theme with outside demand that this
-     account has not covered yet.</p>
+  <h3>{esc(voice.report("themes.howto"))}</h3>
+  <p>{voice.report("themes.calls")
+      .replace("<b>Keep</b>", '<span class="pill keep">Keep</span>')
+      .replace("<b>Ditch</b>", '<span class="pill ditch">Ditch</span>')
+      .replace("<b>Test more</b>", '<span class="pill test">Test more</span>')
+      .replace("<b>Try</b>", '<span class="pill replace">Try</span>')}</p>
   <footer><span>{esc(attribution.stamp_footer())}</span><span>Themes</span></footer>
 </section>"""
 
@@ -429,22 +421,19 @@ def _hooks(ctx: dict) -> str:
     return f"""
 <section class="page">
   <h2>Hooks and captions</h2>
-  <p class="sub">What the opening line does, and whether it shows up in the numbers.</p>
+  <p class="sub">{esc(voice.report("hooks.sub"))}</p>
   {_prose(ctx.get('narrative'), 'hooks')}
   <h3>Caption features against reach</h3>
   {_table(["Feature", "Posts with it", "Avg with", "Avg without", "Difference",
            "Evidence"], feat_rows)}
-  <p class="sub">These features overlap with each other and with the mood the
-     creator was in. A result here says the gap is real, not that the feature
-     caused it.</p>
+  <p class="sub">{esc(voice.report("hooks.caveat"))}</p>
 
   <h3>Are the openers templated?</h3>
   {rep_note}
   {rep_block}
 
-  <h3>Openings that worked on this account</h3>
-  <p class="sub">Taken from posts that beat the account average, so the voice is
-     already the creator's own.</p>
+  <h3>{esc(voice.report("hooks.winners"))}</h3>
+  <p class="sub">{esc(voice.report("hooks.winners.sub"))}</p>
   <ul class="hooklist">{hook_items or "<li>No standout posts yet.</li>"}</ul>
   <footer><span>{esc(attribution.stamp_footer())}</span><span>Hooks</span></footer>
 </section>"""
@@ -462,7 +451,7 @@ def _timing(ctx: dict) -> str:
     return f"""
 <section class="page">
   <h2>Timing and consistency</h2>
-  <p class="sub">When this account posts, and whether it matters.</p>
+  <p class="sub">{esc(voice.report("timing.sub"))}</p>
   {charts.index_bars(a["weekday"], title="Reach by day of week, against the account average")}
   {charts.index_bars(a["duration"], title="Reach by video length")}
   {_prose(ctx.get('narrative'), 'timing')}
@@ -481,8 +470,7 @@ def _timing(ctx: dict) -> str:
      <strong>{_num(cons.get('quiet_avg', 0))}</strong> in quieter months.
      Evidence: {_v(cons['verdict'])}.
      {esc(cons.get('note') or '')}</p>
-  <p class="sub">"Post daily" is good advice in general. This is whether it has
-     shown up in this account's own numbers so far.</p>
+  <p class="sub">{esc(voice.report("timing.cadence"))}</p>
   <footer><span>{esc(attribution.stamp_footer())}</span><span>Timing</span></footer>
 </section>"""
 
@@ -509,8 +497,7 @@ def _audience(ctx: dict) -> str:
                       f'style="border-radius:50%;margin-left:14px;vertical-align:middle">'
                       f'<img src="{prof["avatar_data_uri"]}" width="24" height="24" '
                       f'style="border-radius:50%;margin-left:14px;vertical-align:middle">'
-                      f'<br><span class="m">Your picture at profile size, at comment size, '
-                      f'and at the size it appears in a busy feed.</span></p>')
+                      f'<br><span class="m">{esc(voice.report("audience.avatar"))}</span></p>')
         checks = f"<h3>Profile audit</h3>{avatar}<ul class='checks'>{items}</ul>"
 
     peer_block = ""
@@ -518,16 +505,14 @@ def _audience(ctx: dict) -> str:
         rows = [[esc("@" + p["handle"]), _num(p.get("followers")),
                  esc((p.get("bio") or "")[:110])] for p in peers]
         peer_block = ("<h3>How others in this niche describe their audience</h3>"
-                      "<p class='sub'>Read these as competitive intelligence on "
-                      "positioning: who they say they are for, and what they promise.</p>"
+                      f"<p class='sub'>{esc(voice.report('audience.peers'))}</p>"
                       + _table(["Account", "Followers", "Bio"], rows,
                                left_cols={2}))
 
     return f"""
 <section class="page">
   <h2>Who you are talking to</h2>
-  <p class="sub">The profile a visitor lands on, and how peers in this niche
-     position themselves.</p>
+  <p class="sub">{esc(voice.report("audience.sub"))}</p>
   {_prose(ctx.get('narrative'), 'audience')}
   {checks}
   {peer_block}
@@ -583,14 +568,13 @@ def _demand(ctx: dict) -> str:
     return f"""
 <section class="page">
   <h2>What the niche is talking about</h2>
-  <p class="sub">Outside demand signal, gathered at the time of this run.</p>
+  <p class="sub">{esc(voice.report("demand.sub"))}</p>
   {_prose(ctx.get('narrative'), 'demand')}
   {_table(["Topic", "Posts seen", "Evidence"], topic_rows,
           left_cols={2}) if topic_rows else ""}
   {questions}
-  <h3>Which sources were reachable</h3>
-  <p class="sub">A partial pull is not the whole picture, so this states plainly
-     what was and was not consulted.</p>
+  <h3>{esc(voice.report("demand.coverage"))}</h3>
+  <p class="sub">{esc(voice.report("demand.coverage.sub"))}</p>
   {_table(["Source", "Status", "Note"], rows, left_cols={2})}
   <footer><span>{esc(attribution.stamp_footer())}</span><span>Demand signal</span></footer>
 </section>"""
@@ -609,15 +593,13 @@ def _calendar(ctx: dict) -> str:
     return f"""
 <section class="page">
   <h2>The next 30 days</h2>
-  <p class="sub">A day-by-day plan built from this account's own strongest themes
-     and openings, on a five-day rotation.</p>
+  <p class="sub">{esc(voice.report("calendar.sub"))}</p>
   {charts.donut(mix, title="Post-type mix across the 30 days", value_key="n",
                 label_key="name")}
   {_prose(ctx.get('narrative'), 'calendar')}
   {_table(["Day", "Date", "Type", "Theme", "Prompt", "Evidence"], rows,
           left_cols={3, 4})}
-  <p class="sub">The same calendar is in the accompanying spreadsheet, with
-     columns for your caption, platform and whether you posted.</p>
+  <p class="sub">{esc(voice.report("calendar.note"))}</p>
   <footer><span>{esc(attribution.stamp_footer())}</span><span>30-day calendar</span></footer>
 </section>"""
 
@@ -636,9 +618,7 @@ def _recommendations(ctx: dict) -> str:
     return f"""
 <section class="page">
   <h2>What to make next</h2>
-  <p class="sub">Specific things to film, ordered by how much evidence sits
-     behind them. The first few come from this account's own numbers; the
-     later ones from what the niche is posting and asking right now.</p>
+  <p class="sub">{esc(voice.report("recs.sub"))}</p>
   {_prose(ctx.get('narrative'), 'recommendations')}
   <ol class="recs">{items}</ol>
   <footer><span>{esc(attribution.stamp_footer())}</span><span>What to make next</span></footer>
@@ -668,8 +648,7 @@ def _frameworks(ctx: dict) -> str:
     return f"""
 <section class="page">
   <h2>The frameworks behind this</h2>
-  <p class="sub">The creator playbook these checks are built on, credited to
-     @teezytheturtle. Stated here so you can apply it without the report.</p>
+  <p class="sub">{esc(voice.report("frameworks.sub"))}</p>
 
   <div class="frame">
     <h4>1. Find the audience by studying who already has it</h4>
@@ -726,29 +705,21 @@ def _method(ctx: dict) -> str:
 <section class="page">
   <h2>Method, limits and credits</h2>
 
-  <h3>How the numbers were produced</h3>
-  <p>The catalogue was read via <strong>{esc(meta['harvest_tier'])}</strong>, which
-     returns the same public metrics any visitor can see: views, likes, comments,
-     shares, caption, duration and upload time. Nothing was downloaded and no
-     engagement was automated.</p>
-  <p>Themes were found by {esc(t['method'])}. Where a number of themes fit about
-     equally well, the simpler split was taken, because a feed shattered into
-     twelve themes is not something anyone can act on.</p>
-  <p>Every comparison is tested with Welch's t-test on log-transformed views.
-     View counts are heavily skewed, so one viral post can otherwise carry a whole
-     bucket. Groups under eight posts are never called significant, however large
-     the gap looks. "Solid evidence" means p &lt; 0.01; "early signal" means
-     p &lt; 0.05; anything else is reported as not enough data yet.</p>
-  <p>Upload times are converted in this machine's local timezone, so
-     "best hour" is in your clock, not UTC.</p>
+  <h3>{esc(voice.report("method.how"))}</h3>
+  <p>{"I read the catalogue via" if not voice.is_plain() else "The catalogue was read via"}
+     <strong>{esc(meta['harvest_tier'])}</strong>, which returns the same public
+     metrics any visitor can see: views, likes, comments, shares, caption,
+     duration and upload time. Nothing was downloaded and no engagement was
+     automated.</p>
+  <p>{"I grouped the themes by" if not voice.is_plain() else "Themes were found by"}
+     {esc(t['method'])}. Where several counts fitted about equally well I took the
+     simpler split, because a feed shattered into twelve themes is not something
+     anyone can act on.</p>
+  <p>{voice.report("method.significance")}</p>
+  <p>{esc(voice.report("method.timezone"))}</p>
 
-  <h3>What is genuinely unavailable</h3>
-  <p>Watch time, retention curves, traffic sources, follower growth over time and
-     audience demographics are served by TikTok <strong>only to the account
-     owner</strong>, inside their own analytics. No tool can obtain them for an
-     account it does not own. Where creator advice depends on those numbers, this
-     report tests what it can measure instead and says so rather than inventing a
-     proxy.</p>
+  <h3>{esc(voice.report("method.unavailable"))}</h3>
+  <p>{voice.report("method.owner_only")}</p>
 
   <h3>Credits</h3>
   <ul>{credits}</ul>

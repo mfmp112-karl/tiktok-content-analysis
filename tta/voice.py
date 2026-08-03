@@ -174,3 +174,219 @@ def cover_note(posts: int, span: str) -> str:
         return ""
     return (f"I went through all {posts:,} of them, over {span}. "
             f"Here is what I found, and what I could not tell yet.")
+
+
+# ============================================================ the report's prose
+#
+# The report is the thing that gets printed, forwarded and read six months
+# later, so it carries her voice as much as the terminal does. Same rules apply:
+# she narrates, but she does not touch the numbers. Every table header, every
+# verdict and every figure stays neutral, because a voice in front of a
+# statistic is a statistic nobody trusts.
+#
+# Each entry pairs her wording with a plain one. --plain is not a downgrade —
+# it is the same document written by nobody in particular.
+
+def report(key: str, **kw) -> str:
+    """Look up a piece of report copy, voiced or plain."""
+    voiced, plain = _REPORT[key]
+    text = plain if _plain else voiced
+    return text.format(**kw) if kw else text
+
+
+_REPORT: dict[str, tuple[str, str]] = {
+
+    # --- cover ---------------------------------------------------------------
+    "cover.sub": (
+        "I read every post this account has published. This is what I found.",
+        "A read of what this account has actually published, and a 30-day plan "
+        "built from it."),
+    "cover.intro": (
+        "I have put what I am most sure about first, and I have been careful to "
+        "say when I am not sure. Where you see “not enough data yet”, "
+        "I mean it — it is not a hedge, it is the honest state of the "
+        "evidence, and acting on those rows is how people talk themselves out "
+        "of the thing that was working.",
+        "The pages that follow move from what this account is, to what has "
+        "worked, to what to post next. Every finding carries a note on how much "
+        "evidence sits behind it — read those as carefully as the numbers."),
+    "cover.ethics": (
+        "I exist to help people grow their accounts by understanding what they "
+        "have already made. I read public data only, take nothing TikTok does "
+        "not show any logged-out visitor, and automate no engagement of any "
+        "kind. Please do not point me at anyone in order to harass, impersonate "
+        "or target them.",
+        "This was built to help people grow their accounts meaningfully — by "
+        "understanding what they have already published and deciding what to "
+        "make next. It reads public data only, takes nothing that TikTok does "
+        "not show any logged-out visitor, and automates no engagement of any "
+        "kind. Please do not use it to harass, impersonate, or target anyone."),
+
+    # --- at a glance ---------------------------------------------------------
+    "glance.sub": (
+        "The shape of the account, before I interpret anything.",
+        "The shape of the account before any interpretation."),
+    "glance.limits": (
+        "What I could not tell you",
+        "What this report cannot tell you"),
+
+    # --- recommendations -----------------------------------------------------
+    "recs.sub": (
+        "Things to film, in the order I would do them. The first few come out "
+        "of your own numbers; the later ones from what the rest of your niche "
+        "is doing and asking.",
+        "Specific things to film, ordered by how much evidence sits behind "
+        "them. The first few come from this account's own numbers; the later "
+        "ones from what the niche is posting and asking right now."),
+
+    # --- reach ---------------------------------------------------------------
+    "reach.sub": (
+        "Which way this is going, month by month.",
+        "Where the account is heading, month by month."),
+
+    # --- themes --------------------------------------------------------------
+    "themes.sub": (
+        "I did not decide these in advance. I grouped your captions and let the "
+        "themes fall out of what you actually write about.",
+        "Themes discovered from the captions themselves, not chosen in advance."),
+    "themes.howto": (
+        "How to read what I have called each one",
+        "How to read the call"),
+    "themes.calls": (
+        "<b>Keep</b> beats your average and I have the evidence for it. "
+        "<b>Ditch</b> trails your average and I have the evidence for that too. "
+        "<b>Test more</b> means it looks promising or poor but rests on too few "
+        "posts for me to say — which is the honest answer for most themes on "
+        "most accounts, and I would rather give it than invent a verdict. "
+        "<b>Try</b> is something your niche is doing that you have not.",
+        "<b>Keep</b> beats the account average with evidence behind it. "
+        "<b>Ditch</b> trails the average with evidence behind it. "
+        "<b>Test more</b> looks promising or poor but rests on too few posts to "
+        "judge. <b>Try</b> is a theme with outside demand that this account has "
+        "not covered yet."),
+
+    # --- audience ------------------------------------------------------------
+    "audience.sub": (
+        "The profile someone lands on after a video, and how the accounts "
+        "around you introduce themselves.",
+        "The profile a visitor lands on, and how peers in this niche position "
+        "themselves."),
+    "audience.peers": (
+        "Read these as positioning, not as competition: who they say they are "
+        "for, and what they promise in return for a follow.",
+        "Read these as competitive intelligence on positioning: who they say "
+        "they are for, and what they promise."),
+    "audience.avatar": (
+        "Your picture at profile size, at comment size, and at the size it "
+        "appears in a crowded feed. Most people only ever see the smallest one.",
+        "Your picture at profile size, at comment size, and at the size it "
+        "appears in a busy feed."),
+
+    # --- hooks ---------------------------------------------------------------
+    "hooks.sub": (
+        "What your opening line does, and whether it shows up in the numbers.",
+        "What the opening line does, and whether it shows up in the numbers."),
+    "hooks.caveat": (
+        "These overlap with each other, and with whatever mood you were in that "
+        "week. When I say a gap is real, I mean the gap is real — not that the "
+        "feature caused it.",
+        "These features overlap with each other and with the mood the creator "
+        "was in. A result here says the gap is real, not that the feature "
+        "caused it."),
+    "hooks.winners": (
+        "Openings that already worked here",
+        "Openings that worked on this account"),
+    "hooks.winners.sub": (
+        "Pulled from posts that beat your own average, so the voice is already "
+        "yours. Reuse the shape, not the words.",
+        "Taken from posts that beat the account average, so the voice is "
+        "already the creator's own."),
+
+    # --- timing --------------------------------------------------------------
+    "timing.sub": (
+        "When you post, and whether it has made any difference.",
+        "When this account posts, and whether it matters."),
+    "timing.cadence": (
+        "“Post daily” is good advice in general. This is whether it has "
+        "shown up in your own numbers yet.",
+        "“Post daily” is good advice in general. This is whether it has "
+        "shown up in this account's own numbers so far."),
+
+    # --- demand --------------------------------------------------------------
+    "demand.sub": (
+        "What the rest of your niche was doing while I was looking.",
+        "Outside demand signal, gathered at the time of this run."),
+    "demand.questions.sub": (
+        "Questions people actually typed out in the last 30 days. Each one is a "
+        "video somebody already wants.",
+        "Questions posted in the last 30 days, gathered by the last30days "
+        "skill. Each of these is a video somebody already wants."),
+    "demand.coverage": (
+        "Where I could and could not get to",
+        "Which sources were reachable"),
+    "demand.coverage.sub": (
+        "A partial look is not the whole picture, so here is exactly what I "
+        "managed to read.",
+        "A partial pull is not the whole picture, so this states plainly what "
+        "was and was not consulted."),
+
+    # --- calendar ------------------------------------------------------------
+    "calendar.sub": (
+        "Thirty days built from your own strongest themes and your own best "
+        "openings, on a five-day rotation.",
+        "A day-by-day plan built from this account's own strongest themes and "
+        "openings, on a five-day rotation."),
+    "calendar.note": (
+        "The same thirty days are in the spreadsheet next to this, with room "
+        "for your caption and a box to tick when it goes out.",
+        "The same calendar is in the accompanying spreadsheet, with columns for "
+        "your caption, platform and whether you posted."),
+
+    # --- frameworks ----------------------------------------------------------
+    "frameworks.sub": (
+        "The playbook my checks are built on, credited to @teezytheturtle. I am "
+        "setting it out so you can use it without me.",
+        "The creator playbook these checks are built on, credited to "
+        "@teezytheturtle. Stated here so you can apply it without the report."),
+
+    # --- method --------------------------------------------------------------
+    "method.how": (
+        "How I got these numbers",
+        "How the numbers were produced"),
+    "method.unavailable": (
+        "What I genuinely cannot see",
+        "What is genuinely unavailable"),
+    "method.significance": (
+        "I test every comparison with Welch's t-test on log-transformed views. "
+        "View counts are wildly skewed, so without the log one viral post "
+        "carries a whole bucket and I end up telling you something that is not "
+        "true. I never call a group of fewer than eight posts significant, "
+        "however large the gap looks — “solid evidence” means p &lt; 0.01 and "
+        "“early signal” means p &lt; 0.05. Everything else I report as not "
+        "settled.",
+        "Every comparison is tested with Welch's t-test on log-transformed "
+        "views. View counts are heavily skewed, so one viral post can otherwise "
+        "carry a whole bucket. Groups under eight posts are never called "
+        "significant, however large the gap looks. “Solid evidence” means "
+        "p &lt; 0.01; “early signal” means p &lt; 0.05; anything else is "
+        "reported as not enough data yet."),
+    "method.owner_only": (
+        "Watch time, retention curves, traffic sources, follower growth over "
+        "time and who your audience is are things TikTok shows only to the "
+        "account owner, inside their own analytics. I cannot reach them for an "
+        "account I do not own, and neither can anything else. A good deal of "
+        "creator advice rests on those numbers; where it does, I have tested "
+        "what I can measure instead and told you which is which rather than "
+        "inventing a stand-in.",
+        "Watch time, retention curves, traffic sources, follower growth over "
+        "time and audience demographics are served by TikTok <strong>only to "
+        "the account owner</strong>, inside their own analytics. No tool can "
+        "obtain them for an account it does not own. Where creator advice "
+        "depends on those numbers, this report tests what it can measure "
+        "instead and says so rather than inventing a proxy."),
+    "method.timezone": (
+        "I converted upload times in this machine's local timezone, so “best "
+        "hour” is in your clock, not UTC.",
+        "Upload times are converted in this machine's local timezone, so "
+        "“best hour” is in your clock, not UTC."),
+}
