@@ -375,7 +375,8 @@ and names the three changes worth making first.
 ## Licence
 
 [MIT](LICENSE) — free to use, modify and redistribute, including commercially.
-© 2026 themarketingfmpodcast.
+© 2026 Mbindyo Mutua. The calendar method it implements is
+themarketingfmpodcast's — see [LICENSE](LICENSE).
 
 The credit line in the output is a courtesy the tool keeps for itself, not a
 condition of the licence. Keeping it costs you one line and is simply the

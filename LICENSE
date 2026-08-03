@@ -19,3 +19,27 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+A NOTE ON CREDIT (not a licence condition)
+
+The copyright above covers this software. The *method* it implements does not
+originate here and is credited separately.
+
+The 30-day content calendar - the five post types (EDUCATE, PROOF, ENGAGE,
+OFFER, MIRROR) and the five-day rotation they turn on - is
+themarketingfmpodcast's work. The creator growth practices behind the profile
+audit and the content-style analysis are @teezytheturtle's.
+
+Every report, spreadsheet and document this tool produces carries the line:
+
+    themarketingfmpodcast - Free Tool, Share it.
+
+and the code checks for it before writing anything, so it is not dropped by
+accident. That check is a courtesy the tool does to itself, not a restriction
+on you: the licence above is plain MIT and the software is genuinely free to
+use, modify and redistribute. If you fork this and want the tag gone, edit
+tta/attribution.py and regenerate the digest - nothing here forbids it.
+
+Keeping the credit is simply the decent thing to do, and it costs you a line.
