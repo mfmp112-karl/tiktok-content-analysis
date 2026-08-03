@@ -383,6 +383,55 @@ def profile(handle: str, *, log=print) -> dict | None:
             close_tab(tab)
 
 
+#: TikTok's internal id for an account, needed when the public extractor fails.
+SECUID_JS = """
+(() => {
+  const el = document.getElementById('__UNIVERSAL_DATA_FOR_REHYDRATION__');
+  if (!el) return { found: false };
+  try {
+    const d = JSON.parse(el.textContent)['__DEFAULT_SCOPE__'] || {};
+    const u = ((d['webapp.user-detail'] || {}).userInfo || {}).user || {};
+    return { found: !!u.secUid, secUid: u.secUid || null, id: u.id || null };
+  } catch (e) { return { found: false }; }
+})()
+"""
+
+
+def sec_uid(handle: str, *, log=print) -> str | None:
+    """Read an account's `secUid` out of the page.
+
+    yt-dlp's TikTok extractor sometimes cannot work this out for itself and
+    fails with "Unable to extract secondary user ID", which reads like the
+    account is gone. It is not — its own error message says the fix is to pass
+    `tiktokuser:<secUid>` instead, and the value is sitting in the page's
+    hydration payload where the browser can simply read it.
+
+    So the two harvesters cooperate: camofox supplies the key, yt-dlp does the
+    fast bulk enumeration it is good at.
+    """
+    handle = handle.lstrip("@").lower()
+    tab = None
+    try:
+        tab = open_url(f"https://www.tiktok.com/@{handle}", settle=4.0, log=log)
+        for _ in range(SETTLE_POLLS):
+            try:
+                data = evaluate(tab, SECUID_JS)
+            except BrowserRestarted:
+                close_tab(tab)
+                tab = open_url(f"https://www.tiktok.com/@{handle}", settle=4.0, log=log)
+                continue
+            if isinstance(data, dict) and data.get("found"):
+                return data["secUid"]
+            time.sleep(SETTLE_GAP)
+        return None
+    except CamofoxError as exc:
+        log(f"    could not read secUid for @{handle}: {exc}")
+        return None
+    finally:
+        if tab:
+            close_tab(tab)
+
+
 def scroll_harvest(url: str, *, max_scrolls: int = 30, settle: float = 1.6,
                    stop_after_stagnant: int = 5, log=print) -> list[dict]:
     """Scroll a lazy-loading page and collect every video card it reveals.

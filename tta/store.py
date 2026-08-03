@@ -23,6 +23,12 @@ from . import paths
 
 CHUNK = 400
 
+#: Columns added after the first release. SQLite has no "ADD COLUMN IF NOT
+#: EXISTS", so they are applied on connect and the duplicate error ignored.
+MIGRATIONS = (
+    "ALTER TABLE creators ADD COLUMN sec_uid TEXT",
+)
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS videos (
     handle      TEXT NOT NULL,
@@ -53,6 +59,7 @@ CREATE TABLE IF NOT EXISTS creators (
     bio         TEXT,
     link        TEXT,
     avatar_url  TEXT,
+    sec_uid     TEXT,
     video_count INTEGER,
     updated_at  TEXT
 );
@@ -112,6 +119,12 @@ def connect(path: Path | None = None):
         ).fetchone()
         if not exists:
             conn.executescript(SCHEMA)
+        else:
+            for statement in MIGRATIONS:
+                try:
+                    conn.execute(statement)
+                except sqlite3.OperationalError:
+                    pass          # already applied
         yield conn
         conn.commit()
     finally:

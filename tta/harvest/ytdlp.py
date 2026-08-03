@@ -46,7 +46,8 @@ def _entry_to_row(entry: dict, handle: str) -> dict:
     }
 
 
-def _enumerate(handle: str, cap: int, cookies: str | None = None) -> tuple[dict, dict]:
+def _enumerate(handle: str, cap: int, cookies: str | None = None,
+               sec_uid: str | None = None) -> tuple[dict, dict]:
     import yt_dlp
     from . import session
     opts = {
@@ -57,8 +58,13 @@ def _enumerate(handle: str, cap: int, cookies: str | None = None) -> tuple[dict,
         "ignoreerrors": True,
         **session.ytdlp_opts(cookies),
     }
+    # `tiktokuser:<secUid>` is yt-dlp's own documented escape hatch for
+    # accounts whose secondary id its extractor cannot work out from the
+    # handle. camofox reads that id off the page; see camofox.sec_uid.
+    target = (f"tiktokuser:{sec_uid}" if sec_uid
+              else f"https://www.tiktok.com/@{handle}")
     with yt_dlp.YoutubeDL(opts) as y:
-        info = y.extract_info(f"https://www.tiktok.com/@{handle}", download=False) or {}
+        info = y.extract_info(target, download=False) or {}
     entries = {str(e["id"]): e for e in (info.get("entries") or []) if e and e.get("id")}
     return entries, info
 
@@ -80,7 +86,7 @@ def _profile_from(info: dict) -> dict:
 
 def pull(conn, handle: str, *, cap: int = DEFAULT_CAP, attempts: int = DEFAULT_ATTEMPTS,
          since: date | None = None, cookies: str | None = None,
-         log=print) -> dict:
+         sec_uid: str | None = None, log=print) -> dict:
     """Enumerate and store one account. Returns a summary dict.
 
     Raises HarvestBlocked when nothing at all came back, which is the caller's
@@ -96,7 +102,7 @@ def pull(conn, handle: str, *, cap: int = DEFAULT_CAP, attempts: int = DEFAULT_A
         log(f"  pass {attempt}/{attempts}: enumerating @{handle} (cap {cap})...")
         started = time.time()
         try:
-            entries, this_info = _enumerate(handle, cap, cookies)
+            entries, this_info = _enumerate(handle, cap, cookies, sec_uid)
         except Exception as exc:                 # network, throttle, private account
             last_error = exc
             log(f"    failed: {type(exc).__name__}: {exc}")
@@ -147,7 +153,7 @@ def pull(conn, handle: str, *, cap: int = DEFAULT_CAP, attempts: int = DEFAULT_A
 
     fresh = {r["video_id"] for r in rows} - already
     return {
-        "tier": "yt-dlp",
+        "tier": "yt-dlp (secUid)" if sec_uid else "yt-dlp",
         "enumerated": len(collected),
         "stored": len(rows),
         "new": len(fresh),

@@ -151,17 +151,40 @@ def doctor() -> int:
 
 def harvest(conn, handle: str, args) -> dict:
     banner(f"1/6  {voice.step('harvest')}")
+    stored = (store.creator(conn, handle) or {}).get("sec_uid")
     try:
         summary = ytdlp.pull(conn, handle, cap=args.cap, attempts=args.attempts,
-                             since=args.since, cookies=args.cookies)
+                             since=args.since, cookies=args.cookies,
+                             sec_uid=stored)
         print(voice.found(summary["stored"], summary["new"]))
         return summary
     except ytdlp.HarvestBlocked as exc:
         print(f"  {exc}")
 
-    print("  falling back to the stealth browser...")
     if camofox.healthy():
         session.import_into_camofox(args.cookies, log=lambda m: print(m))
+
+    # Before falling back to scrolling — slower, and it returns less — try the
+    # one thing yt-dlp's own error message asks for. It cannot always work out
+    # an account's secondary id from the handle, but that id is sitting in the
+    # page and the browser can simply read it. Fetch it once, keep it, and let
+    # yt-dlp do the fast bulk pull after all.
+    if not stored and camofox.healthy():
+        print("  asking the browser for this account's internal id...")
+        found = camofox.sec_uid(handle, log=lambda m: print(m))
+        if found:
+            store.upsert_creator(conn, handle, sec_uid=found)
+            conn.commit()
+            try:
+                summary = ytdlp.pull(conn, handle, cap=args.cap,
+                                     attempts=args.attempts, since=args.since,
+                                     cookies=args.cookies, sec_uid=found)
+                print(voice.found(summary["stored"], summary["new"]))
+                return summary
+            except ytdlp.HarvestBlocked as exc:
+                print(f"  that did not work either: {exc}")
+
+    print("  falling back to the stealth browser...")
     if not camofox.healthy():
         print("  camofox is not running either.")
         from tta.harvest import chrome_handoff
