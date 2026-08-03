@@ -7,7 +7,7 @@ No API key. No account. No paid service. Nothing leaves your machine except the
 requests needed to read public pages.
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/tiktok-content-analysis ~/.claude/skills/tiktok-content-analysis
+git clone https://github.com/mfmp112-karl/tiktok-content-analysis ~/.claude/skills/tiktok-content-analysis
 cd ~/.claude/skills/tiktok-content-analysis
 pip install yt-dlp openpyxl
 python driver.py --doctor
