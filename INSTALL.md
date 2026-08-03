@@ -115,18 +115,23 @@ Some creators switch on **audience controls**, which makes TikTok serve their
 profile only to signed-in visitors. You will know because the run stops and
 tells you so.
 
-**1. Make a throwaway TikTok account.** Not your main one. The export below is
-a credential, and automated reading can get an account rate-limited. A spare
-email is all it needs — no posts, no picture, no followers.
+**1. Make a separate browser profile.** This is the step that matters and the
+one people skip. A cookie export contains every cookie that profile holds — from
+your everyday browser that is your email, your bank, everything, any one of
+which is a live session. A profile that has only ever seen tiktok.com can only
+export tiktok.com cookies. In Chrome: avatar, top right → Add → continue
+without an account.
 
-**2. Install a cookie export extension.** Search the Chrome Web Store for
-"Get cookies.txt LOCALLY", or addons.mozilla.org for "cookies.txt" on Firefox.
-Read the permissions first: these can read cookies for every site by design,
-so prefer one that is open-source and works offline.
+**2. Make a throwaway TikTok account inside it.** A spare email, no posts, no
+picture, no followers — it only ever reads. Not your main account: automated
+reading can get one rate-limited, and this is the one you can afford to lose.
+Note that a separate profile separates cookies, not identity — TikTok can still
+associate accounts by device and network.
 
-**3. Sign in as the throwaway account, stay on a tiktok.com page, click the
-extension, and export.** Save the file somewhere private — not in this repo.
-It should start with `# Netscape HTTP Cookie File`.
+**3. Install a cookie export extension in that profile**, sign in, and export
+from a tiktok.com page. Check the extension's permissions first: these read
+cookies for every site by design, which is another reason it belongs in the
+throwaway profile. The file should start with `# Netscape HTTP Cookie File`.
 
 **4. Point the tool at it:**
 
@@ -136,8 +141,10 @@ python driver.py @handle --cookies /path/to/cookies.txt
 
 Or save it as `~/.raven/tiktok-cookies.txt` to skip the flag.
 
-**5. Confirm:** `python driver.py --doctor` will show either a working session
-with days remaining, an expired one, or a file exported while signed out.
+**5. Confirm:** `python driver.py --doctor` shows a working session with days
+remaining, an expired one, or a file exported while signed out. It also warns
+when the file holds cookies for sites other than TikTok, which means it came
+from a browser profile with a life of its own.
 
 Full detail, including what the tool does and does not do with the file, is in
 the [README](README.md#accounts-that-need-a-login).
@@ -218,9 +225,12 @@ already exists; it never authenticates.
 use `python driver.py --doctor`, which reports cookie names, counts and days
 remaining and nothing else.
 
-**Tell them to use a throwaway TikTok account** for any signed-in reading. The
-cookie file is a credential, and automated reading can get an account
-rate-limited. Say this once, plainly, not repeatedly.
+**Tell them to use a separate browser profile and a throwaway TikTok account**
+for any signed-in reading. Not just a throwaway account — the *profile* is the
+part that matters, because a cookie export carries everything that profile
+holds and from a daily browser that is thousands of live sessions. `--doctor`
+warns when a file contains cookies for other sites; if it does, tell them to
+redo it in a clean profile. Say this once, plainly, not repeatedly.
 
 **Do not touch their real browser without explicit permission**, and when they
 grant it, keep it read-only: open, scroll, read. No clicking anything that

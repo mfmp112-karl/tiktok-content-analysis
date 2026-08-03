@@ -124,10 +124,20 @@ def status(explicit: str | None = None) -> dict:
     if info["expired"]:
         return {"configured": True, "usable": False, "path": str(path),
                 "note": "the session has expired; sign in again and re-export"}
+
+    # A cookie export contains everything the browser profile has ever visited,
+    # not just the site you were looking at. Exported from a normal daily
+    # browser that is thousands of cookies for every service the person is
+    # signed into — a far more sensitive file than they think they made, and
+    # they will leave it in Downloads. Worth saying out loud, with the number.
+    note = (f"{info['tiktok']} TikTok cookies, signed in, "
+            f"{info['days_left']} days left")
+    spill = info["total"] - info["tiktok"]
+    if spill > info["tiktok"]:
+        note += (f" — but the file also holds {spill:,} cookies for other sites. "
+                 f"Export from a browser profile used only for this.")
     return {"configured": True, "usable": True, "path": str(path),
-            "note": (f"{info['tiktok']} TikTok cookies, signed in, "
-                     f"{info['days_left']} days left"),
-            **info}
+            "note": note, "other_site_cookies": spill, **info}
 
 
 # --------------------------------------------------------------------- wiring
@@ -168,18 +178,53 @@ To read accounts that have audience controls switched on, this tool needs to be
 signed in to TikTok. It will not log in for you and will never ask for a
 password - you export a session from your own browser and point it at the file.
 
-  1. Make a throwaway TikTok account for this. Do not use your main one: the
-     exported file is a credential, and automated reading can get an account
-     rate-limited or restricted.
-  2. Sign into that account in any browser.
-  3. Export cookies for tiktok.com in Netscape format. Any "cookies.txt"
-     browser extension does this in one click.
-  4. Save the file somewhere private - not inside this repo - and either:
+THE SETUP WORTH DOING PROPERLY
+
+A cookie export contains every cookie the browser profile holds, not just the
+site you were looking at. Exported from your everyday browser that is a file
+containing your email, your bank, your everything - thousands of cookies, any
+one of which is a live session. So use a browser profile that has never been
+anywhere else:
+
+  1. Make a separate email address for this.
+
+  2. Make a NEW BROWSER PROFILE for it. In Chrome: your avatar, top right ->
+     Add -> a new profile, not signed into anything. This is the step that
+     actually matters. A profile that has only ever visited tiktok.com can only
+     ever export tiktok.com cookies, so the file you produce is worth almost
+     nothing to anyone who finds it.
+
+  3. In that profile only, sign up for a TikTok account and sign in. It needs
+     no posts, no picture and no followers - it only ever reads. Do not use
+     your main account: automated reading can get an account rate-limited or
+     restricted, and this is the one you can afford to lose.
+
+  4. Install a "cookies.txt" extension in that profile. Check its reviews and
+     permissions first - these can read cookies for every site by design, so
+     prefer one that is open-source and works offline.
+
+  5. On a tiktok.com page, export. The file should start with
+     "# Netscape HTTP Cookie File".
+
+  6. Save it as ~/.raven/tiktok-cookies.txt and it is picked up
+     automatically, or pass it explicitly:
         python driver.py @handle --cookies /path/to/cookies.txt
-     or save it as ~/.tiktok-content-analysis/tiktok-cookies.txt and it will be
-     picked up automatically.
+
+     Do not leave it in Downloads.
 
 Check it with:  python driver.py --doctor
 
-Sessions expire. When one does, the doctor says so plainly rather than letting
-the run report the account as private."""
+The doctor reports how many TikTok cookies the file holds and how many days the
+session has left. If it also holds a pile of cookies for other sites, it will
+say so - that means it came from a browser profile with a life of its own, and
+you should redo step 2.
+
+WHAT THIS DOES NOT DO
+
+A separate profile separates cookies. It does not make you a different person:
+TikTok can still associate accounts by device and network. Treat the reader
+account as disposable rather than as anonymous.
+
+Sessions expire, usually within a few weeks. When one does the doctor says so,
+which matters because an expired session and a private account look identical
+from the outside."""

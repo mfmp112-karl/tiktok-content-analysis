@@ -232,21 +232,36 @@ tool detects it and tells you, rather than reporting the account as private.
 
 The fix is to give it a signed-in session. Here is the whole process.
 
-### 1. Make a throwaway TikTok account
+### 1. Make a separate browser profile
 
-**Do not use your main account.** Two reasons, both real:
+**This is the step that actually matters**, and it is the one people skip.
 
-- The file you are about to export is a **credential**. Anyone who gets hold of
-  it is signed in as that account.
-- Automated reading can get an account **rate-limited or restricted** by
-  TikTok. Risk that on an account you do not care about.
+A cookie export contains every cookie that browser profile holds — not just the
+site you were looking at. Exported from your everyday browser, that file
+contains your email, your bank, your everything. Thousands of cookies, any one
+of which is a live session someone could walk into.
 
-Sign up at [tiktok.com](https://www.tiktok.com) with a spare email. It needs no
-posts, no profile picture and no followers — it only ever reads.
+A profile that has only ever visited tiktok.com can only ever export tiktok.com
+cookies. The file you produce is then worth almost nothing to anyone who finds
+it.
 
-### 2. Install a cookie export extension
+In Chrome: **your avatar, top right → Add → continue without an account.** Do
+not sign it into Google. Do everything below inside that profile.
 
-Any "cookies.txt" extension will do.
+### 2. Make a throwaway TikTok account in it
+
+A separate email address, then sign up. It needs no posts, no profile picture
+and no followers — it only ever reads.
+
+**Do not use your main account.** Automated reading can get an account
+rate-limited or restricted by TikTok, and this is the one you can afford to
+lose.
+
+> **What this does not do:** a separate profile separates *cookies*. It does not
+> make you a different person — TikTok can still associate accounts by device
+> and network. Treat the reader account as disposable, not as anonymous.
+
+### 3. Install a cookie export extension *in that profile*
 
 - **Chrome / Edge / Brave** — search the
   [Chrome Web Store](https://chromewebstore.google.com/) for
@@ -254,22 +269,21 @@ Any "cookies.txt" extension will do.
 - **Firefox** — search [addons.mozilla.org](https://addons.mozilla.org/) for
   **"cookies.txt"**.
 
-> Read the reviews and the requested permissions before installing. These
-> extensions can read your cookies for **every** site by design, which is
-> exactly why you want one that is open-source and works offline. A cookie
-> exporter that phones home is the last thing you want.
+> Read the reviews and the requested permissions first. These extensions can
+> read your cookies for **every** site by design, which is exactly why you want
+> one that is open-source and works offline — and why it belongs in the throwaway
+> profile rather than your real one.
 
-### 3. Sign in and export
+### 4. Sign in and export
 
-1. Sign into **the throwaway account** at [tiktok.com](https://www.tiktok.com).
+1. In the new profile, sign into the throwaway account at
+   [tiktok.com](https://www.tiktok.com).
 2. Stay on a tiktok.com page.
-3. Click the extension's icon.
-4. Choose **Export** / **Save as cookies.txt** for the current site.
-5. Save the file somewhere private — **not** inside this repo.
+3. Click the extension's icon and export for the current site.
 
 The file is plain text and starts with `# Netscape HTTP Cookie File`.
 
-### 4. Point the tool at it
+### 5. Point the tool at it
 
 Pass it each time:
 
@@ -280,19 +294,29 @@ python driver.py @handle --cookies /path/to/cookies.txt
 Or save it once at `~/.raven/tiktok-cookies.txt` and it is
 picked up automatically.
 
-### 5. Check it worked
+### 6. Check it worked
 
 ```bash
 python driver.py --doctor
 ```
 
 ```
-[  OK  ] Signed-in TikTok session    41 TikTok cookies, signed in, 21.0 days left
+[  OK  ] Signed-in TikTok session    8 TikTok cookies, signed in, 21.0 days left
 ```
 
-You will see one of three things: it is working, **the session has expired**
-(sign in again and re-export), or **no sessionid found** (you exported while
-signed out).
+If the file also holds cookies for other sites, the doctor says so:
+
+```
+[  OK  ] Signed-in TikTok session    33 TikTok cookies, signed in, 10.0 days left
+                                     — but the file also holds 719 cookies for
+                                     other sites. Export from a browser profile
+                                     used only for this.
+```
+
+That means it came from a browser with a life of its own. Go back to step 1.
+
+You may also see **the session has expired** (sign in again and re-export) or
+**no sessionid found** (you exported while signed out).
 
 ### What the tool does and does not do with it
 
