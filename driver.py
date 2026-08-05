@@ -310,7 +310,12 @@ def run(args) -> int:
     print(f"Output: {out_dir}")
 
     with store.connect() as conn:
-        accessed_via = "logged-out / anonymous session"
+        # Provenance for the report cover: measure session, do not hardcode.
+        sess = session.status(args.cookies if getattr(args, "cookies", None) else None)
+        if sess.get("usable") or args.cookies:
+            accessed_via = "signed-in session"
+        else:
+            accessed_via = "logged-out / anonymous session"
         run_id = store.start_run(conn, handle, accessed_via)
 
         summary = harvest(conn, handle, args)
