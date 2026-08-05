@@ -418,13 +418,25 @@ def timedelta_days(n: int):
 
 
 def load_narrative(path: str | None) -> dict:
-    """Optional prose written by an agent from the computed aggregates."""
+    """Optional prose written by an agent from the computed aggregates.
+
+    If the user passed ``--narrative`` and the file is missing or invalid JSON,
+    raise SystemExit so the failure is not silent.
+    """
     if not path:
         return {}
+    p = Path(path)
+    if not p.is_file():
+        raise SystemExit(f"--narrative file not found: {path}")
     try:
-        return json.loads(Path(path).read_text(encoding="utf-8"))
-    except Exception:
-        return {}
+        data = json.loads(p.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"--narrative file is not valid JSON ({path}): {exc}") from exc
+    except OSError as exc:
+        raise SystemExit(f"--narrative file unreadable ({path}): {exc}") from exc
+    if not isinstance(data, dict):
+        raise SystemExit(f"--narrative must be a JSON object, got {type(data).__name__}")
+    return data
 
 
 def json_safe(obj):
