@@ -25,7 +25,7 @@ import json
 import sys
 import time
 import webbrowser
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -350,7 +350,7 @@ def run(args) -> int:
         cal = calbuild.build(shortlist=shortlisted, theme_calls=calls,
                              winning_hooks=hook_info["winning_hooks"],
                              best_slot=cad["best_slot"], gaps=demand.get("gaps"),
-                             start=date.today() + timedelta_days(1))
+                             start=date.today() + timedelta(days=1))
         xlsx = workbook.write(cal, handle=handle,
                               winning_hooks=hook_info["winning_hooks"],
                               repetition=hook_info["repetition"],
@@ -411,10 +411,6 @@ def run(args) -> int:
             pass
     return 0
 
-
-def timedelta_days(n: int):
-    from datetime import timedelta
-    return timedelta(days=n)
 
 
 def load_narrative(path: str | None) -> dict:
