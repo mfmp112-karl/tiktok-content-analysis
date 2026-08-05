@@ -300,6 +300,15 @@ PROFILE_JS = """
 #: duration, or a stray "7". And the caption comes from the thumbnail image's
 #: `alt` attribute, which carries the full caption including hashtags even
 #: though nothing on the card displays it.
+#:
+#: The badge attribute is a moving target — TikTok has used `data-e2e`
+#: containing "video-views" and a `<strong title="…">` element in the past;
+#: confirmed live on 2026-08-05 that the profile-grid card now uses
+#: `data-e2e="video-card-badge"` and has no `<strong>` at all. Older
+#: selectors kept as fallbacks for pages this function also serves (hashtag
+#: and search results) in case they haven't moved the same way — but if a
+#: card matches none of these, `views` comes back `''`, which the caller
+#: must treat as "unknown", not as zero (see driver.py's harvest()).
 CARDS_JS = """
 (() => {
   const out = [];
@@ -307,7 +316,8 @@ CARDS_JS = """
     const m = a.href.match(/@([\\w.\\-]+)\\/video\\/(\\d+)/);
     if (!m) return;
     const card = a.closest('[data-e2e]') || a.parentElement || a;
-    const viewNode = card.querySelector('[data-e2e*="video-views"], strong[title]');
+    const viewNode = card.querySelector(
+      '[data-e2e="video-card-badge"], [data-e2e*="video-views"], strong[title]');
     const img = card.querySelector('img[alt]');
     const alt = img ? (img.getAttribute('alt') || '') : '';
     out.push({

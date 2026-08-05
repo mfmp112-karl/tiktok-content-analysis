@@ -39,7 +39,7 @@ python driver.py @handle
 That is the whole thing: harvest, profile, analyse, research, calendar, report.
 It prints progress per step and finishes with a folder path.
 
-Useful variations, all verified:
+Useful variations:
 
 ```bash
 python driver.py @handle --no-research --no-open
@@ -92,8 +92,8 @@ the failure mode otherwise looks identical to a private account.
 
 ## What the report contains
 
-Ten sections, in this order. The two that people read first are **What to make
-next** and **The next 30 days**.
+Ten sections, in this order, plus a short method appendix. The two that
+people read first are **What to make next** and **The next 30 days**.
 
 | Section | What it answers |
 |---|---|
@@ -107,8 +107,7 @@ next** and **The next 30 days**.
 | Timing and consistency | Best day and hour, and whether posting more has helped. |
 | What the niche is talking about | Demand signal, and what people are actually asking. |
 | **The next 30 days** | The calendar, on the five-day rotation. |
-| The frameworks behind this | The creator playbook, stated so it can be used without the report. |
-| Method, limits and credits | How every number was produced. |
+| *Method, limits and credits* | *Appendix — how every number was produced.* |
 
 ## What it writes
 

@@ -71,7 +71,7 @@ def _stamp(ws, row: int) -> None:
 
 
 def _sheet(wb: Workbook, title: str):
-    ws = wb.create_sheet(title[:31])
+    ws = wb.create_sheet(title[:31])  # noqa: hard-slice — Excel's own tab-name limit, not prose
     ws.sheet_view.showGridLines = False
     return ws
 
@@ -179,6 +179,9 @@ def _calendar_tab(wb: Workbook, cal: dict) -> None:
             if col == 4:
                 c.fill = PatternFill("solid", fgColor=TYPE_FILL[day["post_type"]])
                 c.font = BOLD
+            if col == 7 and day.get("hook_url"):
+                c.hyperlink = day["hook_url"]
+                c.font = Font(color="0563C1", underline="single")
             if col == 9:
                 c.font = Font(color=VERDICT_COLOR.get(day["confidence"], MUTED),
                               size=10)

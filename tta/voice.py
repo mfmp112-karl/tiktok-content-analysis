@@ -155,9 +155,9 @@ def finished(seconds: float, where: str) -> str:
 
 def cannot_measure() -> str:
     return _say(
-        "Watch time, retention, traffic sources and who your audience is are "
-        "TikTok's to give and it only gives them to you, inside your own "
-        "analytics. I have not tried to guess at them.",
+        "Watch time, retention, traffic sources, and who your audience is — "
+        "only TikTok can show you those, inside your own analytics. I "
+        "haven’t guessed at them.",
         "Watch time, retention, traffic sources and audience demographics are "
         "owner-only and are not in this report.")
 
@@ -172,8 +172,8 @@ def cover_note(posts: int, span: str) -> str:
     """One line under the cover figure. Counts the work before judging it."""
     if _plain:
         return ""
-    return (f"I went through all {posts:,} of them, over {span}. "
-            f"Here is what I found, and what I could not tell yet.")
+    return (f"I read all {posts:,} of them, over {span}. Here’s what I "
+            f"found — and what I couldn’t tell yet.")
 
 
 # ============================================================ the report's prose
@@ -197,47 +197,39 @@ def report(key: str, **kw) -> str:
 _REPORT: dict[str, tuple[str, str]] = {
 
     # --- cover ---------------------------------------------------------------
-    "cover.sub": (
-        "I read every post this account has published. This is what I found.",
-        "A read of what this account has actually published, and a 30-day plan "
-        "built from it."),
     "cover.intro": (
-        "I have put what I am most sure about first, and I have been careful to "
-        "say when I am not sure. Where you see “not enough data yet”, "
-        "I mean it — it is not a hedge, it is the honest state of the "
-        "evidence, and acting on those rows is how people talk themselves out "
-        "of the thing that was working.",
-        "The pages that follow move from what this account is, to what has "
-        "worked, to what to post next. Every finding carries a note on how much "
-        "evidence sits behind it — read those as carefully as the numbers."),
+        "I put what I’m most sure about first. When I’m not sure, I say so. "
+        "“Not enough data yet” means just that. Don’t act on those rows — "
+        "you might drop the one thing that was working.",
+        "The pages ahead move from what this account is, to what has worked, "
+        "to what to post next. Each finding says how much proof stands "
+        "behind it. Read that as closely as the numbers."),
     "cover.ethics": (
-        "I exist to help people grow their accounts by understanding what they "
-        "have already made. I read public data only, take nothing TikTok does "
-        "not show any logged-out visitor, and automate no engagement of any "
-        "kind. Please do not point me at anyone in order to harass, impersonate "
-        "or target them.",
-        "This was built to help people grow their accounts meaningfully — by "
-        "understanding what they have already published and deciding what to "
-        "make next. It reads public data only, takes nothing that TikTok does "
-        "not show any logged-out visitor, and automates no engagement of any "
-        "kind. Please do not use it to harass, impersonate, or target anyone."),
+        "I help people grow their accounts. I look at what they’ve already "
+        "made. I only read public data — nothing a logged-out visitor "
+        "couldn’t see. I never post, follow, like, or message anyone. "
+        "Please don’t use me to harass, impersonate, or target someone.",
+        "Built to help people grow their accounts. Looks at what they’ve "
+        "already made. Reads public data only — nothing a logged-out "
+        "visitor couldn’t see. Automates no engagement of any kind. Please "
+        "don’t use it to harass, impersonate, or target anyone."),
 
     # --- at a glance ---------------------------------------------------------
     "glance.sub": (
-        "The shape of the account, before I interpret anything.",
-        "The shape of the account before any interpretation."),
+        "The shape of the account, before I say what it means.",
+        "The shape of the account, before any interpreting."),
     "glance.limits": (
-        "What I could not tell you",
+        "What I couldn’t tell you",
         "What this report cannot tell you"),
 
     # --- recommendations -----------------------------------------------------
     "recs.sub": (
-        "Things to film, in the order I would do them. The first few come out "
-        "of your own numbers; the later ones from what the rest of your niche "
-        "is doing and asking.",
-        "Specific things to film, ordered by how much evidence sits behind "
-        "them. The first few come from this account's own numbers; the later "
-        "ones from what the niche is posting and asking right now."),
+        "Film these in this order. The first ones come from your own "
+        "numbers. The last ones come from what your niche is doing and "
+        "asking.",
+        "Things to film, ordered by how much proof backs each one. The "
+        "first ones come from this account's own numbers. The rest come "
+        "from what the niche is posting and asking now."),
 
     # --- reach ---------------------------------------------------------------
     "reach.sub": (
@@ -246,39 +238,37 @@ _REPORT: dict[str, tuple[str, str]] = {
 
     # --- themes --------------------------------------------------------------
     "themes.sub": (
-        "I did not decide these in advance. I grouped your captions and let the "
-        "themes fall out of what you actually write about.",
+        "I didn’t pick these ahead of time. I grouped your captions, and "
+        "these themes fell out on their own.",
         "Themes discovered from the captions themselves, not chosen in advance."),
     "themes.howto": (
-        "How to read what I have called each one",
+        "How to read each label",
         "How to read the call"),
     "themes.calls": (
-        "<b>Keep</b> beats your average and I have the evidence for it. "
-        "<b>Ditch</b> trails your average and I have the evidence for that too. "
-        "<b>Test more</b> means it looks promising or poor but rests on too few "
-        "posts for me to say — which is the honest answer for most themes on "
-        "most accounts, and I would rather give it than invent a verdict. "
-        "<b>Try</b> is something your niche is doing that you have not.",
-        "<b>Keep</b> beats the account average with evidence behind it. "
-        "<b>Ditch</b> trails the average with evidence behind it. "
-        "<b>Test more</b> looks promising or poor but rests on too few posts to "
-        "judge. <b>Try</b> is a theme with outside demand that this account has "
-        "not covered yet."),
+        "<b>Keep</b>: beats your average, and I can prove it. <b>Ditch</b>: "
+        "trails your average, and I can prove that too. <b>Test more</b>: "
+        "looks good or bad, but too few posts to be sure — the true answer "
+        "for most themes on most accounts. <b>Try</b>: your niche is doing "
+        "this and you aren’t.",
+        "<b>Keep</b>: beats the account average, proven. <b>Ditch</b>: "
+        "trails the average, proven. <b>Test more</b>: looks good or bad, "
+        "too few posts to judge. <b>Try</b>: outside demand this account "
+        "hasn’t covered yet."),
 
     # --- audience ------------------------------------------------------------
     "audience.sub": (
-        "The profile someone lands on after a video, and how the accounts "
+        "The profile people land on after a video. And how the accounts "
         "around you introduce themselves.",
-        "The profile a visitor lands on, and how peers in this niche position "
-        "themselves."),
+        "The profile a visitor lands on, and how peers in this niche "
+        "position themselves."),
     "audience.peers": (
-        "Read these as positioning, not as competition: who they say they are "
-        "for, and what they promise in return for a follow.",
-        "Read these as competitive intelligence on positioning: who they say "
-        "they are for, and what they promise."),
+        "Read these as ideas, not rivals. Who do they say they’re for? "
+        "What do they promise for a follow?",
+        "Who these accounts say they’re for, and what they promise for a "
+        "follow."),
     "audience.avatar": (
-        "Your picture at profile size, at comment size, and at the size it "
-        "appears in a crowded feed. Most people only ever see the smallest one.",
+        "Your picture at three sizes: profile, comment, and busy feed. Most "
+        "people only ever see the smallest one.",
         "Your picture at profile size, at comment size, and at the size it "
         "appears in a busy feed."),
 
@@ -287,18 +277,16 @@ _REPORT: dict[str, tuple[str, str]] = {
         "What your opening line does, and whether it shows up in the numbers.",
         "What the opening line does, and whether it shows up in the numbers."),
     "hooks.caveat": (
-        "These overlap with each other, and with whatever mood you were in that "
-        "week. When I say a gap is real, I mean the gap is real — not that the "
-        "feature caused it.",
-        "These features overlap with each other and with the mood the creator "
-        "was in. A result here says the gap is real, not that the feature "
-        "caused it."),
+        "These features overlap each other, and your mood that week. A "
+        "real gap means the gap is real — not that this one thing caused it.",
+        "These features overlap each other and the creator’s mood. A real "
+        "gap means real — not that this one feature caused it."),
     "hooks.winners": (
         "Openings that already worked here",
         "Openings that worked on this account"),
     "hooks.winners.sub": (
-        "Pulled from posts that beat your own average, so the voice is already "
-        "yours. Reuse the shape, not the words.",
+        "Taken from posts that beat your average. The voice is already "
+        "yours — reuse the shape, not the words.",
         "Taken from posts that beat the account average, so the voice is "
         "already the creator's own."),
 
@@ -307,10 +295,10 @@ _REPORT: dict[str, tuple[str, str]] = {
         "When you post, and whether it has made any difference.",
         "When this account posts, and whether it matters."),
     "timing.cadence": (
-        "“Post daily” is good advice in general. This is whether it has "
-        "shown up in your own numbers yet.",
-        "“Post daily” is good advice in general. This is whether it has "
-        "shown up in this account's own numbers so far."),
+        "“Post daily” is good advice. This is whether it’s shown up in "
+        "your numbers yet.",
+        "“Post daily” is good advice. This is whether it’s shown up in "
+        "this account’s numbers yet."),
 
     # --- demand --------------------------------------------------------------
     "demand.sub": (
@@ -322,32 +310,26 @@ _REPORT: dict[str, tuple[str, str]] = {
         "Questions posted in the last 30 days, gathered by the last30days "
         "skill. Each of these is a video somebody already wants."),
     "demand.coverage": (
-        "Where I could and could not get to",
+        "Where I got to, and where I didn’t",
         "Which sources were reachable"),
     "demand.coverage.sub": (
-        "A partial look is not the whole picture, so here is exactly what I "
-        "managed to read.",
+        "A partial look isn’t the whole picture. Here’s exactly what I read.",
         "A partial pull is not the whole picture, so this states plainly what "
         "was and was not consulted."),
 
     # --- calendar ------------------------------------------------------------
     "calendar.sub": (
-        "Thirty days built from your own strongest themes and your own best "
-        "openings, on a five-day rotation.",
-        "A day-by-day plan built from this account's own strongest themes and "
-        "openings, on a five-day rotation."),
+        "Thirty days, built from your strongest themes and your best "
+        "openings. A five-day rotation. Where I found one, each day points "
+        "to a real post of yours to build from.",
+        "A day-by-day plan built from this account’s own strongest themes "
+        "and openings, on a five-day rotation. Where one exists, each day "
+        "links to a real post from this account’s own catalogue."),
     "calendar.note": (
-        "The same thirty days are in the spreadsheet next to this, with room "
-        "for your caption and a box to tick when it goes out.",
+        "The same thirty days are in the spreadsheet too. There’s room for "
+        "your caption, and a box to check when it’s posted.",
         "The same calendar is in the accompanying spreadsheet, with columns for "
         "your caption, platform and whether you posted."),
-
-    # --- frameworks ----------------------------------------------------------
-    "frameworks.sub": (
-        "The playbook my checks are built on, credited to @teezytheturtle. I am "
-        "setting it out so you can use it without me.",
-        "The creator playbook these checks are built on, credited to "
-        "@teezytheturtle. Stated here so you can apply it without the report."),
 
     # --- method --------------------------------------------------------------
     "method.how": (
@@ -357,33 +339,30 @@ _REPORT: dict[str, tuple[str, str]] = {
         "What I genuinely cannot see",
         "What is genuinely unavailable"),
     "method.significance": (
-        "I test every comparison with Welch's t-test on log-transformed views. "
-        "View counts are wildly skewed, so without the log one viral post "
-        "carries a whole bucket and I end up telling you something that is not "
-        "true. I never call a group of fewer than eight posts significant, "
-        "however large the gap looks — “solid evidence” means p &lt; 0.01 and "
-        "“early signal” means p &lt; 0.05. Everything else I report as not "
-        "settled.",
-        "Every comparison is tested with Welch's t-test on log-transformed "
-        "views. View counts are heavily skewed, so one viral post can otherwise "
-        "carry a whole bucket. Groups under eight posts are never called "
-        "significant, however large the gap looks. “Solid evidence” means "
-        "p &lt; 0.01; “early signal” means p &lt; 0.05; anything else is "
-        "reported as not enough data yet."),
+        "I test every comparison with a standard statistics test (Welch’s "
+        "t-test), on a log scale. Without that, one viral post can throw "
+        "off a whole group. I never call a group proven with fewer than "
+        "eight posts, no matter how big the gap looks. “Solid evidence” "
+        "and “early signal” are two proof levels; anything weaker I call "
+        "not settled.",
+        "Every comparison uses a standard statistics test (Welch’s "
+        "t-test), on a log scale. Without that, one viral post can throw "
+        "off a whole group. Groups under eight posts are never called "
+        "proven, no matter how big the gap looks. “Solid evidence” and "
+        "“early signal” are two proof levels; anything weaker is reported "
+        "as not settled."),
     "method.owner_only": (
-        "Watch time, retention curves, traffic sources, follower growth over "
-        "time and who your audience is are things TikTok shows only to the "
-        "account owner, inside their own analytics. I cannot reach them for an "
-        "account I do not own, and neither can anything else. A good deal of "
-        "creator advice rests on those numbers; where it does, I have tested "
-        "what I can measure instead and told you which is which rather than "
-        "inventing a stand-in.",
-        "Watch time, retention curves, traffic sources, follower growth over "
-        "time and audience demographics are served by TikTok <strong>only to "
-        "the account owner</strong>, inside their own analytics. No tool can "
-        "obtain them for an account it does not own. Where creator advice "
+        "Watch time, retention, traffic sources, follower growth, and who "
+        "your audience is — TikTok shows these only to the account owner. "
+        "I can’t get them for an account I don’t own. No tool can. A lot "
+        "of creator advice leans on those numbers. Where it does, I tested "
+        "what I could measure instead, and said plainly which is which.",
+        "Watch time, retention, traffic sources, follower growth, and who "
+        "your audience is — TikTok shows these <strong>only to the "
+        "account owner</strong>, inside their own analytics. No tool can "
+        "get them for an account it does not own. Where creator advice "
         "depends on those numbers, this report tests what it can measure "
-        "instead and says so rather than inventing a proxy."),
+        "instead and says so plainly."),
     "method.timezone": (
         "I converted upload times in this machine's local timezone, so “best "
         "hour” is in your clock, not UTC.",

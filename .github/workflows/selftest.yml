@@ -1,0 +1,27 @@
+name: selftest
+
+# Scheduled, not on every push: --selftest hits real TikTok. Its job is to
+# turn "a report came back thin" into a red build within a day of TikTok
+# changing something, not to gate every commit — see SURFACES.md for what
+# each row here actually reads back, and why a camofox/last30days row
+# showing "--" here is expected (neither is installed on this runner) rather
+# than a failure.
+on:
+  schedule:
+    - cron: "17 6 * * *"   # once a day; an arbitrary off-the-hour minute
+  workflow_dispatch: {}     # so a maintainer can run it on demand too
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Read the external surfaces back
+        env:
+          # Keep this run's data off the runner's real home entirely.
+          RAVEN_HOME: ${{ runner.temp }}/raven-selftest
+        run: python driver.py --selftest

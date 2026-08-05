@@ -148,6 +148,83 @@ def doctor() -> int:
     return 1 if blocking else 0
 
 
+# ----------------------------------------------------------------------- selftest
+
+#: A small, stable public account used only to prove the four external
+#: surfaces still answer for real. Reusing the account this project has
+#: already tested against, rather than inventing a fixture — one fewer new
+#: external dependency for --selftest to carry.
+SELFTEST_HANDLE = "sidneynyaga"
+
+
+def selftest() -> int:
+    """Read each external surface back for real — see SURFACES.md.
+
+    A different question from --doctor: doctor asks "is this installed",
+    this asks "does it actually answer correctly, right now, against a real
+    account." Kept deliberately cheap (one enumeration attempt, a small cap,
+    no research scrolling beyond one pass) so it can run on a schedule in CI
+    without risking the same rate limiting a full harvest can trigger.
+
+    A surface that is simply not configured here (camofox not running,
+    last30days not installed) is reported as skipped, not failed — matching
+    --doctor's own required/optional distinction. Only a surface that was
+    reached and answered wrong counts toward the exit code.
+    """
+    print(f"\n{voice.mark()}   v{__version__}  ·  selftest against @{SELFTEST_HANDLE}")
+    print("=" * 62)
+    rows: list[tuple[str, str, str]] = []   # label, "ok"/"fail"/"skip", detail
+
+    try:
+        with store.connect() as conn:
+            summary = ytdlp.pull(conn, SELFTEST_HANDLE, cap=20, attempts=1)
+        n = summary.get("stored", 0)
+        rows.append(("TikTok catalogue (yt-dlp)", "ok" if n > 0 else "fail",
+                     f"{n} videos stored" if n else "0 videos returned"))
+    except ytdlp.HarvestBlocked as exc:
+        rows.append(("TikTok catalogue (yt-dlp)", "fail", str(exc)))
+
+    healthy = camofox.healthy()
+    rows.append(("camofox HTTP API", "ok" if healthy else "skip",
+                 "answering" if healthy else "not running"))
+
+    if healthy:
+        prof = camofox.profile(SELFTEST_HANDLE)
+        ok = bool(prof and prof.get("followers"))
+        rows.append(("TikTok DOM via camofox", "ok" if ok else "fail",
+                     f"{prof.get('followers')} followers" if ok
+                     else "profile read but no follower count came back"))
+    else:
+        rows.append(("TikTok DOM via camofox", "skip", "camofox not running"))
+
+    if last30days.available():
+        result = last30days.run([SELFTEST_HANDLE], quick=True)
+        coverage = result.get("coverage") or []
+        ok = bool(coverage)
+        rows.append(("last30days", "ok" if ok else "fail",
+                     f"{len(coverage)} source(s) reported"
+                     if ok else "ran but returned no coverage row"))
+    else:
+        rows.append(("last30days", "skip", "skill not installed"))
+
+    print()
+    failed = 0
+    for label, status, detail in rows:
+        mark = {"ok": "  OK  ", "fail": " FAIL ", "skip": "  --  "}[status]
+        print(f"[{mark}] {label:<28} {detail}")
+        if status == "fail":
+            failed += 1
+
+    print()
+    if failed:
+        print(f"{failed} surface(s) did not answer as expected. "
+              f"See SURFACES.md for what a healthy read looks like.")
+    else:
+        print("Every reachable surface answered.")
+    print(f"\n{attribution.TAG}\n")
+    return 1 if failed else 0
+
+
 # ------------------------------------------------------------------------- steps
 
 def harvest(conn, handle: str, args) -> dict:
@@ -208,12 +285,24 @@ def harvest(conn, handle: str, args) -> dict:
 
     cards = camofox.scroll_harvest(f"https://www.tiktok.com/@{handle}",
                                    max_scrolls=args.scrolls)
+    own = [c for c in cards if c["creator"].lower() == handle]
     rows = [{"video_id": c["video_id"], "url": c["url"], "title": c["text"],
-             "views": c["views"] or 0} for c in cards if c["creator"].lower() == handle]
+             "views": c["views"] or 0} for c in own]
     if not rows:
         raise SystemExit(
             f"Could not read any videos for @{handle}. The account may be "
             f"private, renamed, or have no public posts.")
+    # c["views"] is None when the badge selector found nothing to read, not
+    # when a video genuinely has zero views — collapsing both into the same
+    # stored 0 is how a broken selector quietly becomes "this account gets
+    # no engagement" instead of a visible warning. The 0 still has to be
+    # stored (every stat downstream expects a real int), but the run has to
+    # say plainly that it doesn't know these numbers rather than imply it does.
+    unreadable = sum(1 for c in own if c["views"] is None)
+    if unreadable:
+        print(f"  {unreadable}/{len(own)} view counts could not be read from "
+              f"the page (stored as 0, not a real reading) — TikTok's card "
+              f"layout may have changed; see SURFACES.md")
     store.upsert_videos(conn, handle, rows)
     conn.commit()
     return {"tier": "camofox scroll", "stored": len(rows), "new": len(rows),
@@ -460,6 +549,9 @@ def main(argv: list[str]) -> int:
                     help="explain how to set up a signed-in session")
     ap.add_argument("--doctor", action="store_true",
                     help="check what is installed and what is missing")
+    ap.add_argument("--selftest", action="store_true",
+                    help="read the four external surfaces back for real; "
+                         "see SURFACES.md")
     ap.add_argument("--cap", type=int, default=ytdlp.DEFAULT_CAP,
                     help="most videos to enumerate (default %(default)s)")
     ap.add_argument("--attempts", type=int, default=ytdlp.DEFAULT_ATTEMPTS,
@@ -500,6 +592,9 @@ def main(argv: list[str]) -> int:
 
     if args.doctor:
         return doctor()
+
+    if args.selftest:
+        return selftest()
 
     if not args.handle:
         try:

@@ -32,15 +32,15 @@ POST_TYPES = [
         "name": "ENGAGE",
         "does": "Feeds the algorithm. Comments and replies are the cheapest reach "
                 "you will ever get.",
-        "how": "Ask something they actually want to answer, and make it about "
-               "them rather than about you.",
+        "how": "Ask something they actually want to answer. Make it about "
+               "them, not you.",
         "shape": "Ask your audience the one thing you most want to know about "
                  "how they approach {theme}.",
     },
     {
         "name": "OFFER",
-        "does": "The direct revenue driver. One per five days is the right "
-                "frequency — more than that and it reads as desperate.",
+        "does": "The direct sales post. One every five days is right — more, "
+                "and it reads as desperate.",
         "how": "Be specific: what exactly, for how much, by when, and precisely "
                "what to do next.",
         "shape": "Make one specific, time-bound offer connected to {theme}. Say "
@@ -50,8 +50,8 @@ POST_TYPES = [
         "name": "MIRROR",
         "does": "The highest-connection post. Aimed at people who do not yet know "
                 "they have the problem you solve.",
-        "how": "Describe their exact frustration in the words they use in their "
-               "own head. Sell nothing at all. Just mirror it back.",
+        "how": "Describe their frustration in their own words. Sell "
+               "nothing. Just mirror it back.",
         "shape": "Describe the frustration someone hits with {theme}, in their "
                  "words, and sell nothing.",
     },

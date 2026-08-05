@@ -55,8 +55,13 @@ def _rotation_offset(start: date, best_day: str | None) -> int:
     return 0
 
 
-def _hook_for(theme: str, winning_hooks: list[dict], used: set[str]) -> str:
-    """Prefer a hook the account itself already landed, within this theme."""
+def _hook_for(theme: str, winning_hooks: list[dict], used: set[str]) -> dict | None:
+    """Prefer a hook the account itself already landed, within this theme.
+
+    Returns the whole matched row (hook text, url, views, index) rather than
+    just the text, so the report and the calendar can link back to the real
+    post instead of quoting it with nowhere to click through to.
+    """
     for pool in (
         [h for h in winning_hooks if h.get("theme") == theme],
         list(winning_hooks),
@@ -65,8 +70,8 @@ def _hook_for(theme: str, winning_hooks: list[dict], used: set[str]) -> str:
             text = (h.get("hook") or "").strip()
             if text and text not in used:
                 used.add(text)
-                return text
-    return ""
+                return h
+    return None
 
 
 def build(*, shortlist: list[dict], theme_calls: dict, winning_hooks: list[dict],
@@ -101,6 +106,7 @@ def build(*, shortlist: list[dict], theme_calls: dict, winning_hooks: list[dict]
         ptype = cycle.POST_TYPES[(i + shift) % cycle.CYCLE]
         theme = theme_names[i % len(theme_names)]
         verdict = verdicts.get(theme, "too early to tell")
+        match = _hook_for(theme, winning_hooks, used_hooks)
         rows.append({
             "day": day_no,
             "date": when.isoformat(),
@@ -108,7 +114,10 @@ def build(*, shortlist: list[dict], theme_calls: dict, winning_hooks: list[dict]
             "post_type": ptype["name"],
             "theme": theme,
             "prompt": ptype["shape"].format(theme=readable(theme)),
-            "hook": _hook_for(theme, winning_hooks, used_hooks),
+            "hook": (match.get("hook") or "").strip() if match else "",
+            "hook_url": (match.get("url") or "") if match else "",
+            "hook_views": match.get("views") if match else None,
+            "hook_index": match.get("index") if match else None,
             "best_time": best_slot.get("hour") or "",
             "confidence": verdict,
             "confidence_plain": plain(verdict),

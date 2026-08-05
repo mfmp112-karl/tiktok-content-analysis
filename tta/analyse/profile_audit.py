@@ -70,12 +70,11 @@ def audit(profile: dict | None, *, video_count: int = 0) -> dict | None:
     checks.append({
         "name": "Profile picture",
         "pass": has_avatar,
-        "detail": ("Shown below at the three sizes it actually appears at. Most "
-                   "of the time people see the smallest one."
+        "detail": ("Shown below at three sizes. Most people only ever see "
+                   "the smallest one."
                    if has_avatar else "No profile picture could be read."),
-        "fix": ("Look at the smallest version. If you cannot tell what it is at "
-                "that size, simplify it: one subject, clean background, little "
-                "or no text."),
+        "fix": ("Look at the smallest version. Can't tell what it is? "
+                "Simplify: one subject, plain background, little or no text."),
     })
 
     # --- bio -------------------------------------------------------------
@@ -90,8 +89,8 @@ def audit(profile: dict | None, *, video_count: int = 0) -> dict | None:
             "name": "Bio scans quickly",
             "pass": scans,
             "detail": f"{len(bio)} characters across {len(lines)} line(s).",
-            "fix": (f"People scan bios, they do not read them. Aim for at most "
-                    f"{BIO_MAX_LINES} short lines and under {BIO_MAX_CHARS} "
+            "fix": (f"People scan bios, they don't read them. Keep it under "
+                    f"{BIO_MAX_LINES} short lines and {BIO_MAX_CHARS} "
                     f"characters."),
         })
         named = bool(AUDIENCE_HINTS.search(bio))
@@ -100,8 +99,8 @@ def audit(profile: dict | None, *, video_count: int = 0) -> dict | None:
             "pass": named,
             "detail": ("It addresses a particular reader." if named else
                        "It describes the account, but not who it is for."),
-            "fix": "Name the person you want. A reader who sees themselves in the "
-                   "first line has already decided.",
+            "fix": "Say who this is for. A reader who sees themselves in "
+                   "line one has already decided to stay.",
         })
         promises = bool(VALUE_HINTS.search(bio))
         checks.append({
@@ -117,9 +116,8 @@ def audit(profile: dict | None, *, video_count: int = 0) -> dict | None:
         "name": "Link",
         "pass": bool(link),
         "detail": link or "No link on the profile.",
-        "fix": ("Add one, even with nothing to sell. A newsletter or a community "
-                "gives the attention somewhere to go, and it is yours rather "
-                "than rented from an algorithm."),
+        "fix": ("Add one, even with nothing to sell. Send the attention "
+                "somewhere that's yours — not rented from an algorithm."),
     })
     if bio and not CTA_HINTS.search(bio) and link:
         checks.append({
@@ -134,8 +132,8 @@ def audit(profile: dict | None, *, video_count: int = 0) -> dict | None:
         "name": "Enough posted to judge",
         "pass": video_count >= 30,
         "detail": f"{video_count} public posts.",
-        "fix": "Under about thirty posts, almost nothing in this report can reach "
-               "statistical significance. Keep posting; the picture sharpens.",
+        "fix": "Under thirty posts, almost nothing here can be proven yet. "
+               "Keep posting — the picture gets clearer.",
     })
 
     passed = sum(1 for c in checks if c["pass"])

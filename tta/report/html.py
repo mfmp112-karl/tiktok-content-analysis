@@ -23,6 +23,8 @@ from __future__ import annotations
 from datetime import datetime
 
 from .. import attribution, voice
+from .. import text as texttool
+from ..analyse.themes import readable
 from ..stats import plain
 from . import charts
 from .charts import esc
@@ -145,6 +147,9 @@ tbody tr:nth-child(even) { background: var(--band); }
 .hooklist li { margin-bottom: 6px; }
 .hooklist .m { color: var(--muted); font-size: 11px; }
 
+/* links inside tables — the calendar's example-post cells ----------------- */
+a { color: var(--accent); text-decoration: none; }
+
 /* recommendations — a numbered run of things to actually make ------------ */
 .recs { list-style: none; margin: 10px 0 0; padding: 0; counter-reset: rec; }
 .recs li { counter-increment: rec; padding: 12px 0 12px 42px; position: relative;
@@ -160,15 +165,19 @@ tbody tr:nth-child(even) { background: var(--band); }
 /* the countdown — what would make an undecided finding decidable --------- */
 .needs { color: var(--accent); font-weight: 600; }
 
-.frame { border: 1px solid var(--rule); border-radius: 4px; padding: 14px 16px;
-  margin: 12px 0; background: var(--band); break-inside: avoid; }
-.frame h4 { margin: 0 0 4px; font-size: 13.5px; font-weight: 700; }
-.frame p { margin: 0; color: var(--soft); }
-.frame + .frame { margin-top: 10px; }
-
 footer { margin-top: 10mm; padding-top: 8px; border-top: 1px solid var(--rule);
   font-size: 10.5px; color: var(--muted); display: flex;
   justify-content: space-between; gap: 12px; }
+
+/* appendix — method/limits/credits. Flows onto the tail of the last page
+   rather than forcing a fresh one: it is reference material, not a finding,
+   and does not earn a page of its own. */
+.appendix { margin-top: 14mm; padding-top: 10px; border-top: 1px solid var(--ink);
+  font-size: 11.5px; }
+.appendix h2 { font-size: 15px; margin-bottom: 8px; }
+.appendix h3 { font-size: 11.5px; margin: 12px 0 4px; color: var(--soft); }
+.appendix p { margin: 0 0 6px; max-width: 74ch; }
+.appendix ul { margin: 0 0 6px; padding-left: 16px; }
 """
 
 VERDICT_CLASS = {"strong": "v-strong", "moderate": "v-moderate"}
@@ -322,19 +331,38 @@ def _at_a_glance(ctx: dict) -> str:
 </section>"""
 
 
+#: The month-by-month table stays useful for as long as a month is still
+#: recent enough to act on. Past that it is history, not a planning input —
+#: the trend charts above the table already carry the long arc, in full.
+REACH_TABLE_MONTHS = 12
+
+
 def _reach(ctx: dict) -> str:
     a = ctx["analysis"]
     monthly = a["monthly"]
+    older, recent = monthly[:-REACH_TABLE_MONTHS], monthly[-REACH_TABLE_MONTHS:]
+
+    older_note = ""
+    if older:
+        older_posts = sum(r["posts"] for r in older)
+        older_avg = (round(sum(r["avg"] * r["posts"] for r in older) / older_posts)
+                     if older_posts else 0)
+        older_note = (f'<p class="sub">The chart above shows all '
+                      f'{len(monthly)} months, back to {esc(older[0]["month"])}. '
+                      f'The table below shows the last {REACH_TABLE_MONTHS}. '
+                      f'Before {esc(recent[0]["month"])}: {_num(older_posts)} '
+                      f'more posts, averaging {_num(older_avg)} views.</p>')
+
     rows = [[esc(r["month"]), _num(r["posts"]), _num(r["avg"]),
-             _num(r["median"]), _num(r["best"])] for r in monthly]
+             _num(r["median"]), _num(r["best"])] for r in recent]
     return f"""
 <section class="page">
   <h2>Reach and trajectory</h2>
   <p class="sub">{esc(voice.report("reach.sub"))}</p>
   {charts.trend_line(monthly, title="Average views per post, by month")}
-  {charts.volume_bars(monthly, title="Posts published per month",
-                      label_key="month", value_key="posts")}
+  {charts.trend_line(monthly, title="Posts published per month", y_key="posts")}
   {_prose(ctx.get('narrative'), 'reach')}
+  {older_note}
   {_table(["Month", "Posts", "Avg views", "Median", "Best"], rows)}
   <footer><span>{esc(attribution.stamp_footer())}</span><span>Reach and trajectory</span></footer>
 </section>"""
@@ -415,7 +443,8 @@ def _hooks(ctx: dict) -> str:
 
     hook_items = "".join(
         f'<li>{esc(w["hook"])}<br><span class="m">{_num(w["views"])} views · '
-        f'{w["index"]}% of average{" · " + esc(w["theme"]) if w["theme"] else ""}</span></li>'
+        f'{w["index"]}% of average'
+        f'{" · " + esc(readable(w["theme"])) if w["theme"] else ""}</span></li>'
         for w in h["winning_hooks"])
 
     return f"""
@@ -446,8 +475,7 @@ def _timing(ctx: dict) -> str:
     cons = cad["consistency"]
 
     caveat = ("" if slot["day_proven"] else
-              " Neither is proven yet — treat them as the best available guess "
-              "rather than a rule.")
+              " Neither is proven yet — treat them as a guess, not a rule.")
     return f"""
 <section class="page">
   <h2>Timing and consistency</h2>
@@ -457,17 +485,17 @@ def _timing(ctx: dict) -> str:
   {_prose(ctx.get('narrative'), 'timing')}
 
   <h3>Best slot</h3>
-  <p>The strongest day is <strong>{esc(slot['day'] or 'unclear')}</strong>
-     (index {slot['day_index'] or '—'}) and the strongest hour is
+  <p>Your strongest day is <strong>{esc(slot['day'] or 'unclear')}</strong>
+     (index {slot['day_index'] or '—'}). Your strongest hour is
      <strong>{esc(slot['hour'] or 'unclear')}</strong>
      (index {slot['hour_index'] or '—'}).{esc(caveat)}
      Hours are in this machine's local timezone.</p>
 
   <h3>Does posting more often help?</h3>
-  <p>In months where this account posted more than its median of
-     {cons.get('median_posts', 0):.0f} posts, videos averaged
-     <strong>{_num(cons.get('busy_avg', 0))}</strong> views, against
-     <strong>{_num(cons.get('quiet_avg', 0))}</strong> in quieter months.
+  <p>When this account posted more than its median of
+     {cons.get('median_posts', 0):.0f} posts a month, videos averaged
+     <strong>{_num(cons.get('busy_avg', 0))}</strong> views. In quieter
+     months: <strong>{_num(cons.get('quiet_avg', 0))}</strong>.
      Evidence: {_v(cons['verdict'])}.
      {esc(cons.get('note') or '')}</p>
   <p class="sub">{esc(voice.report("timing.cadence"))}</p>
@@ -549,20 +577,17 @@ def _demand(ctx: dict) -> str:
                 f'<br><span class="m">{esc(s[:150])}</span>'
         items = "".join(f'<li>{esc(c["title"])}{_sub(c)}</li>' for c in asked)
         questions = ("<h3>What people are actually asking</h3>"
-                     "<p class='sub'>Questions posted in the last 30 days, "
-                     "gathered by the last30days skill. Each of these is a "
-                     "video somebody already wants.</p>"
+                     f"<p class='sub'>{esc(voice.report('demand.questions.sub'))}</p>"
                      f"<ul class='hooklist'>{items}</ul>")
     elif research.get("l30_clusters"):
         # Say why the list is missing. A section that silently disappears
         # looks like a broken feature; this looks like what it is.
+        n = len(research["l30_clusters"])
         questions = ("<h3>What people are actually asking</h3>"
-                     f"<p class='sub'>The research skill found "
-                     f"{len(research['l30_clusters'])} discussions in this "
-                     f"niche over the last 30 days, but none of them were "
-                     f"questions worth answering on camera — they were product "
-                     f"launches, promotions and resurfaced articles. Nothing "
-                     f"has been invented to fill the gap.</p>")
+                     f"<p class='sub'>I found {n} discussions in this niche "
+                     f"in the last 30 days. None were real questions to "
+                     f"film — just launches, promos, and old articles. I "
+                     f"didn’t invent anything to fill the gap.</p>")
     else:
         questions = ""
     return f"""
@@ -588,7 +613,7 @@ def _calendar(ctx: dict) -> str:
     mix = cal.get("mix") or []
     rows = [[
         _num(d["day"]), esc(d["date"]), f'<strong>{esc(d["post_type"])}</strong>',
-        esc(d["theme"]), esc(d["prompt"]), _v(d["confidence"]),
+        esc(d["theme"]), _example_post(d), _v(d["confidence"]),
     ] for d in days]
     return f"""
 <section class="page">
@@ -597,11 +622,27 @@ def _calendar(ctx: dict) -> str:
   {charts.donut(mix, title="Post-type mix across the 30 days", value_key="n",
                 label_key="name")}
   {_prose(ctx.get('narrative'), 'calendar')}
-  {_table(["Day", "Date", "Type", "Theme", "Prompt", "Evidence"], rows,
+  {_table(["Day", "Date", "Type", "Theme", "Example post", "Evidence"], rows,
           left_cols={3, 4})}
   <p class="sub">{esc(voice.report("calendar.note"))}</p>
   <footer><span>{esc(attribution.stamp_footer())}</span><span>30-day calendar</span></footer>
 </section>"""
+
+
+def _example_post(d: dict) -> str:
+    """A real post to build from, where the account has one on this theme.
+
+    Honesty over invention: a theme with no matching winner falls back to the
+    old instruction sentence, but labelled plainly as a fallback rather than
+    presented as an equally strong example.
+    """
+    url, hook = d.get("hook_url"), d.get("hook")
+    if url and hook:
+        views = d.get("hook_views") or 0
+        index = d.get("hook_index") or 100
+        return (f'<a href="{esc(url)}">“{esc(texttool.truncate(hook, 90))}”</a>'
+                f'<br><span class="m">{_num(views)} views · {index}% of average</span>')
+    return f'<span class="m">No example yet — {esc(d["prompt"])}</span>'
 
 
 def _recommendations(ctx: dict) -> str:
@@ -625,129 +666,78 @@ def _recommendations(ctx: dict) -> str:
 </section>"""
 
 
-def _frameworks(ctx: dict) -> str:
-    """The creator playbook this report's checks are built on, stated plainly.
-
-    Included because the analysis keeps referring to it — content style, hooks,
-    profile conversion — and a reader deserves the underlying model rather than
-    just its verdicts.
-    """
-    audit = ctx.get("profile_audit")
-    words = (ctx.get("research") or {}).get("audience_words") or []
-    themes_info = ctx["themes"]
-    eff = themes_info.get("effective_themes")
-
-    style_line = (f"Your feed currently reads as about <strong>{eff} distinct "
-                  f"styles</strong>. " if eff else "")
-    audience_line = ("Words the accounts around you repeat in their bios: "
-                     + ", ".join(esc(w) for w in words[:8]) + ". "
-                     if words else "")
-    profile_line = (f"You passed {audit['passed']} of {audit['total']} profile "
-                    f"checks. " if audit else "")
-
-    return f"""
-<section class="page">
-  <h2>The frameworks behind this</h2>
-  <p class="sub">{esc(voice.report("frameworks.sub"))}</p>
-
-  <div class="frame">
-    <h4>1. Find the audience by studying who already has it</h4>
-    <p>Somebody is already making content for the people you want. Read how
-       they name their audience in their bio, what they post about, what
-       register they write in. {audience_line}That is your positioning research,
-       and it is free.</p>
-  </div>
-
-  <div class="frame">
-    <h4>2. The profile converts, the content only delivers</h4>
-    <p>Reach gets someone to a video; the profile turns them into a follower.
-       Four things do that work: a picture that still reads at comment size, a
-       bio of three or four scannable lines that names who it is for and what
-       they get, a link so the attention has somewhere to go, and pinned posts
-       that show your best work first. {profile_line}The audit page has the
-       specifics.</p>
-  </div>
-
-  <div class="frame">
-    <h4>3. A unique style is found by subtraction</h4>
-    <p>Test several kinds of content, drop the ones that do not travel, replace
-       them, repeat. {style_line}That loop is what the theme table on this
-       report is measuring — Keep, Ditch and Test more are the three moves in
-       it. The trap is quitting a style before you have made enough of it to
-       know.</p>
-  </div>
-
-  <div class="frame">
-    <h4>4. The hook is the whole first second</h4>
-    <p>A strong opening buys you the rest of the video, and a script that holds
-       after the hook is what turns a view into watch time. Vary the shape of
-       your openings — repeating the same opener is one of the least visible
-       ways to lose reach, and the hooks page checks for exactly that.</p>
-  </div>
-
-  <div class="frame">
-    <h4>5. Post often enough to learn</h4>
-    <p>Daily is the advice, and the reason is not the algorithm — it is that
-       you cannot find your style from six posts. Frequency is what makes
-       everything else in this report measurable. The timing page tests whether
-       it has shown up in your own numbers yet.</p>
-  </div>
-
-  <footer><span>{esc(attribution.stamp_footer())}</span><span>Frameworks</span></footer>
-</section>"""
-
-
 def _method(ctx: dict) -> str:
+    """Method, limits and credits — a compact appendix, not a section.
+
+    Reference material a reader checks once, not a finding. It used to force
+    its own page; now it flows onto the tail of whatever page precedes it, so
+    it costs the space it actually needs rather than a whole page slot.
+    """
     meta = ctx["meta"]
     t = ctx["themes"]
-    credits = "".join(f"<li>{esc(line)}</li>" for line in attribution.credit_lines())
+    credits = " · ".join(esc(line) for line in attribution.credit_lines())
     return f"""
-<section class="page">
+<div class="appendix">
   <h2>Method, limits and credits</h2>
-
-  <h3>{esc(voice.report("method.how"))}</h3>
-  <p>{"I read the catalogue via" if not voice.is_plain() else "The catalogue was read via"}
-     <strong>{esc(meta['harvest_tier'])}</strong>, which returns the same public
-     metrics any visitor can see: views, likes, comments, shares, caption,
-     duration and upload time. Nothing was downloaded and no engagement was
-     automated.</p>
-  <p>{"I grouped the themes by" if not voice.is_plain() else "Themes were found by"}
-     {esc(t['method'])}. Where several counts fitted about equally well I took the
-     simpler split, because a feed shattered into twelve themes is not something
-     anyone can act on.</p>
-  <p>{voice.report("method.significance")}</p>
-  <p>{esc(voice.report("method.timezone"))}</p>
-
-  <h3>{esc(voice.report("method.unavailable"))}</h3>
-  <p>{voice.report("method.owner_only")}</p>
-
-  <h3>Credits</h3>
-  <ul>{credits}</ul>
-  <p class="sub">{esc(attribution.TAG)}</p>
-  <footer><span>{esc(attribution.stamp_footer())}</span><span>Method</span></footer>
-</section>"""
+  <p><strong>{esc(voice.report("method.how"))}:</strong>
+     {"read via" if not voice.is_plain() else "Read via"}
+     <strong>{esc(meta['harvest_tier'])}</strong> — the same public metrics any
+     visitor can see. Nothing downloaded, no engagement automated. Themes were
+     grouped by {esc(t['method'])}. {voice.report("method.significance")}
+     {esc(voice.report("method.timezone"))}</p>
+  <p><strong>{esc(voice.report("method.unavailable"))}:</strong>
+     {voice.report("method.owner_only")}</p>
+  <p class="sub">{credits} — {esc(attribution.TAG)}</p>
+</div>"""
 
 
 # ==================================================================== assembly
+
+#: The report's own table of contents — the single source of truth both
+#: `render()` and `scripts/check_docs.py` build from, so the assembled
+#: document and the docs describing it can never silently drift apart the
+#: way they did when a section was deleted here but not from README.md and
+#: SKILL.md (see that script for the check).
+SECTIONS = [
+    {"id": "cover", "fn": _cover, "title": "Cover",
+     "answers": "Which account, read through which session, when, by what "
+                "version — plus the ethical-use notice.", "appendix": False},
+    {"id": "at_a_glance", "fn": _at_a_glance, "title": "At a glance",
+     "answers": "The shape of the account, and what this report cannot tell "
+                "you.", "appendix": False},
+    {"id": "recommendations", "fn": _recommendations, "title": "What to make next",
+     "answers": "A numbered list of specific things to film, ordered by "
+                "evidence.", "appendix": False},
+    {"id": "reach", "fn": _reach, "title": "Reach and trajectory",
+     "answers": "Where it is heading, month by month.", "appendix": False},
+    {"id": "themes", "fn": _themes, "title": "What this account is about",
+     "answers": "Themes as a 3D pie, with Keep / Ditch / Test more / Try.",
+     "appendix": False},
+    {"id": "audience", "fn": _audience, "title": "Who you are talking to",
+     "answers": "Profile audit and how peers position themselves.",
+     "appendix": False},
+    {"id": "hooks", "fn": _hooks, "title": "Hooks and captions",
+     "answers": "Which caption features travel; whether openers are "
+                "templated.", "appendix": False},
+    {"id": "timing", "fn": _timing, "title": "Timing and consistency",
+     "answers": "Best day and hour, and whether posting more has helped.",
+     "appendix": False},
+    {"id": "demand", "fn": _demand, "title": "What the niche is talking about",
+     "answers": "Demand signal, and what people are actually asking.",
+     "appendix": False},
+    {"id": "calendar", "fn": _calendar, "title": "The next 30 days",
+     "answers": "The calendar, on the five-day rotation.", "appendix": False},
+    {"id": "method", "fn": _method, "title": "Method, limits and credits",
+     "answers": "How every number was produced.", "appendix": True},
+]
+
 
 def render(ctx: dict) -> str:
     """Build the whole document. `ctx` is the run bundle; see driver.py."""
     attribution.verify()
     meta = ctx["meta"]
-    body = "".join(part for part in [
-        _cover(ctx),
-        _at_a_glance(ctx),
-        _recommendations(ctx),
-        _reach(ctx),
-        _themes(ctx),
-        _audience(ctx),
-        _hooks(ctx),
-        _timing(ctx),
-        _demand(ctx),
-        _calendar(ctx),
-        _frameworks(ctx),
-        _method(ctx),
-    ] if part)
+    body = "".join(part for part in
+                   (section["fn"](ctx) for section in SECTIONS) if part)
 
     doc = f"""<!doctype html>
 <html lang="en"><head>

@@ -19,6 +19,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 
+from .. import text as texttool
 from ..stats import welch_verdict
 from .aggregates import caption
 
@@ -151,10 +152,11 @@ def winning_hooks(videos: list[dict], limit: int = 12) -> list[dict]:
             continue
         seen.add(key)
         out.append({
-            "hook": text[:140],
+            "hook": texttool.truncate(text, 140),
             "views": v.get("views") or 0,
             "index": round((v.get("views") or 0) / avg * 100) if avg else 100,
             "theme": v.get("theme") or "",
+            "url": v.get("url") or "",
         })
         if len(out) >= limit:
             break

@@ -396,7 +396,7 @@ def _empty(title: str, width: int, height: int) -> str:
 
 def legend_note() -> str:
     """Explains the hatching once, near the first chart that uses it."""
-    return ('<p class="legend-note"><span class="swatch solid"></span> filled = the '
-            'difference cleared a significance test &nbsp;·&nbsp; '
-            '<span class="swatch hatched"></span> outlined = not enough evidence yet, '
-            'treat as a hint rather than a finding</p>')
+    return ('<p class="legend-note"><span class="swatch solid"></span> filled = '
+            'proven &nbsp;·&nbsp; '
+            '<span class="swatch hatched"></span> outlined = not proven yet, '
+            'take it as a hint</p>')

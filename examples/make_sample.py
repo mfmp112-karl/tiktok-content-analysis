@@ -149,7 +149,11 @@ def main() -> int:
         "meta": {"handle": HANDLE,
                  "accessed_via": "sample build - no account was read",
                  "harvest_tier": "invented data (see examples/make_sample.py)",
-                 "generated": rhtml.now_stamp(), "version": __version__},
+                 # Fixed, not rhtml.now_stamp(): a sample rebuilt tomorrow
+                 # should be byte-identical to today's, so a CI diff-check
+                 # (issue #35) has something stable to compare against.
+                 "generated": "01 August 2026 at 09:00 UTC",
+                 "version": __version__},
         "creator": creator, "analysis": analysis, "themes": info,
         "hooks": hook_info, "cadence": cad, "theme_calls": calls,
         "profile_audit": None, "peers": [], "research": demand,

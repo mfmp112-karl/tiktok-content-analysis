@@ -415,8 +415,8 @@ def readable(name: str) -> str:
 #: nothing is called a loser without evidence, because telling someone to stop
 #: making the thing they love on the strength of six posts is worse than useless.
 CALLS = {
-    "keep": ("Keep", "beats the account average, with evidence behind it"),
-    "ditch": ("Ditch", "trails the account average, with evidence behind it"),
+    "keep": ("Keep", "beats your average, proven"),
+    "ditch": ("Ditch", "trails your average, proven"),
     "test": ("Test more", "not enough posts yet to judge either way"),
     "replace": ("Try", "outside demand this account has not covered"),
 }

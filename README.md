@@ -42,6 +42,7 @@ Prefer a tool to a character? `--plain` turns the voice off everywhere.
 - [Accounts that need a login](#accounts-that-need-a-login) — throwaway account and cookies, in full
 - [What it cannot tell you](#what-it-cannot-tell-you)
 - [Limits and roadmap](LIMITATIONS.md)
+- [What can break, and how to check it](SURFACES.md)
 - [Please use this well](#please-use-this-well)
 - [Credits](#credits) · [Contact](#contact) · [Licence](#licence)
 
@@ -56,7 +57,7 @@ Every run writes five files to
 |---|---|
 | **`report.pdf`** | The report. A4, charted, ready to print or send. |
 | `report.html` | The same document, opens in any browser. |
-| **`calendar.xlsx`** | 30 dated rows on a five-day rotation. Six tabs including a hook library and a progress tracker. Columns left blank for your caption, platform, and a tick when it goes out. |
+| **`calendar.xlsx`** | 30 dated rows on a five-day rotation. Six tabs including a hook library and a progress tracker. Where a day matches a real post of yours, the suggested hook links straight to it. Columns left blank for your caption, platform, and a tick when it goes out. |
 | `analysis.json` | Every computed figure. Nothing is hidden in the PDF. |
 | `videos.csv` | The raw catalogue. |
 
@@ -74,7 +75,6 @@ Every run writes five files to
 | Timing and consistency | Best day and hour, and whether posting more has actually helped *you*. |
 | What the niche is talking about | Demand signal, and questions people are asking right now. |
 | **The next 30 days** | The calendar. |
-| The frameworks behind this | The creator playbook, stated so you can use it without the report. |
 | Method, limits and credits | How every number was produced. |
 
 ### The part most tools skip
@@ -203,10 +203,17 @@ python driver.py @handle --cap 2000 --attempts 4
 python driver.py @handle --since 2026-01-01
 python driver.py @handle --cookies path/to/cookies.txt
 python driver.py @handle --plain
+python driver.py --selftest
 python driver.py --help
 ```
 
 Re-running an account is **incremental** — it only fetches what is new.
+
+`--selftest` is a different check from `--doctor`: doctor confirms things are
+*installed*, selftest confirms they *answer correctly right now*, against a
+small known account. Useful when a report comes back thin and you want to
+know which of the four external systems behind it is the one misbehaving —
+see **[SURFACES.md](SURFACES.md)**.
 
 ---
 

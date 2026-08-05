@@ -95,7 +95,7 @@ def run(topics: list[str], *, quick: bool = True, log=print) -> dict:
     if not skill:
         return {"items": [], "clusters": [], "coverage": [{
             "source": "last30days (Reddit, Hacker News, web)", "ok": False,
-            "note": "skill not installed - these sources were not consulted",
+            "note": "skill not installed — I didn't check these sources",
         }]}
 
     # One topic, not a concatenation. Joining two mechanical theme labels

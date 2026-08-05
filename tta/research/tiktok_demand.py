@@ -153,7 +153,7 @@ def run(topics: list[str], *, scrolls: int = DEFAULT_SCROLLS,
     if not camofox.healthy():
         coverage.append({
             "source": "TikTok (via camofox)", "ok": False,
-            "note": "camofox is not running, so no TikTok research was gathered.",
+            "note": "camofox wasn't running, so I couldn't gather TikTok research.",
         })
         return {"topics": [], "peers": [], "audience_words": [], "coverage": coverage,
                 "gaps": []}
