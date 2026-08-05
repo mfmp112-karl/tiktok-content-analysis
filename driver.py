@@ -252,7 +252,7 @@ def analyse(videos: list[dict], conn, handle: str, args) -> tuple[dict, dict]:
                               else None)
         store.set_themes(conn, handle, info["assignments"])
         conn.commit()
-        videos = store.load_videos(conn, handle)
+        videos = store.load_videos(conn, handle, since=args.since)
         print(voice.themes_found(info.get("k") or 0, info.get("effective_themes")))
     else:
         info = {"method": "reused stored themes", "k": None, "silhouette": None,
@@ -315,12 +315,12 @@ def run(args) -> int:
 
         summary = harvest(conn, handle, args)
         prof = read_profile(conn, handle, not args.no_profile)
-        videos = store.load_videos(conn, handle)
+        videos = store.load_videos(conn, handle, since=args.since)
         if not videos:
             raise SystemExit(f"No videos stored for @{handle}.")
 
         analysis, theme_info = analyse(videos, conn, handle, args)
-        videos = store.load_videos(conn, handle)
+        videos = store.load_videos(conn, handle, since=args.since)
         hook_info = hooks.build(videos)
         cad = cadence.build(videos, analysis["weekday"], analysis["hour"])
 
@@ -365,6 +365,7 @@ def run(args) -> int:
             "meta": {
                 "handle": handle,
                 "accessed_via": accessed_via,
+                "since": args.since.isoformat() if args.since else None,
                 "harvest_tier": summary.get("tier", "yt-dlp"),
                 "generated": rhtml.now_stamp(),
                 "version": __version__,

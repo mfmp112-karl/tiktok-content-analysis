@@ -224,10 +224,25 @@ def finish_run(conn, run_id: int, *, harvest_tier: str, sources: str,
 
 # -------------------------------------------------------------------------- reads
 
-def load_videos(conn, handle: str) -> list[dict]:
-    rows = conn.execute(
-        "SELECT * FROM videos WHERE handle=? ORDER BY uploaded", (norm_handle(handle),)
-    ).fetchall()
+def load_videos(conn, handle: str, since=None) -> list[dict]:
+    """Load stored videos for a handle, optionally filtered by upload date.
+
+    ``since`` is a ``datetime.date``. When set, only rows with ``uploaded`` on
+    or after that day are returned so flags like ``--since`` constrain analysis,
+    not only harvest writes.
+    """
+    handle = norm_handle(handle)
+    if since is None:
+        rows = conn.execute(
+            "SELECT * FROM videos WHERE handle=? ORDER BY uploaded", (handle,)
+        ).fetchall()
+    else:
+        # uploaded is ISO text; lexicographic compare works for YYYY-MM-DD…
+        rows = conn.execute(
+            "SELECT * FROM videos WHERE handle=? AND uploaded IS NOT NULL "
+            "AND date(uploaded) >= date(?) ORDER BY uploaded",
+            (handle, since.isoformat()),
+        ).fetchall()
     return [dict(r) for r in rows]
 
 
