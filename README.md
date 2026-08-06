@@ -2,18 +2,48 @@
 
 **Raven reads a TikTok account and tells you what she actually found.**
 
-Point her at any public account. She goes through every post it has ever made,
-works out what travelled and what only looked like it did, and writes you a
-report plus a 30-day content calendar.
+Free. Local. No API key, no account, no subscription. Installs as a Claude
+Code skill.
 
-Her defining habit is that **she will not overclaim.** On a young account most
-findings come back "not enough data yet" — and she says so, plainly, rather
-than dressing up a hunch as a finding. That is deliberate: a confident report
-built on six posts is how people talk themselves out of the thing that was
-working.
+---
 
-**Free. Local. No API key, no account, no subscription.** Two Python packages
-and a browser you already have. Nothing is uploaded anywhere.
+## Where Raven fits
+
+Running a business breaks down into a handful of core functions, and
+marketing is one of them. Inside marketing, reaching people through your own
+content — as opposed to paying for reach, or borrowing someone else's
+audience — is one specific channel. Raven works that channel.
+
+She's the first in what's meant to become a small set of skills for people
+running a business without a team behind them, starting with the part almost
+everyone gets wrong: making content for months without ever stopping to check
+what's actually working.
+
+Right now Raven reads TikTok end to end. Instagram, YouTube, X, LinkedIn and
+other platforms are the same job in a different place, and they're next.
+Beyond content, the plan is more skills in the same spirit — one for each
+piece of starting, running and managing a business, each held to the same
+standard: local, free, and honest about what it doesn't know.
+
+## The problem
+
+Most people post, glance at the view count once, and go back to guessing.
+Almost nobody sits down with fifty-plus posts and works out what's actually
+landing, what should stop, and what to make next — that's an agency's job,
+and it costs real money. Most solo founders and small teams never get that
+answer at all.
+
+## What Raven does
+
+Point her at any public account. She goes through every post it has ever
+made, works out what travelled and what only looked like it did, and writes
+you a report plus a 30-day content calendar.
+
+Her defining habit is that **she will not overclaim.** On a young account
+most findings come back "not enough data yet" — and she says so, plainly,
+rather than dressing up a hunch as a finding. That is deliberate: a confident
+report built on six posts is how people talk themselves out of the thing that
+was working.
 
 **→ [See a sample report](examples/sample-report/sample-report.pdf)** before
 installing anything. It is built from invented data for a made-up account, so
@@ -21,27 +51,32 @@ you can see exactly what you get.
 ([HTML version](examples/sample-report/sample-report.html) ·
 [the calendar it produces](examples/sample-report/sample-calendar.xlsx))
 
----
+That sample is fictional, by design, so nobody mistakes it for a promise.
+Here's what a real one looked like this week, pulled straight from
+`analysis.json` after a live run against a public account — 346 posts,
+averaging 33,767 views, median 13,200, best post 571,200:
 
 ```
 Raven is reading @someone.
 
 3/6  Working out what actually travelled, and what only looked like it
-  4 themes. The feed reads as about 2.8 distinct styles.
-  Nothing here is settled yet. I would rather tell you that than guess at it.
+  8 themes. The feed reads as about 2.2 distinct styles.
+  4 things I am confident about, 5 more worth watching.
 ```
 
 Prefer a tool to a character? `--plain` turns the voice off everywhere.
 
 ## Contents
 
+- [Where Raven fits](#where-raven-fits)
 - [What you get](#what-you-get)
 - [Install it](#install-it) — step by step, nothing assumed
 - [Use it](#use-it)
 - [Optional extras](#optional-extras)
 - [Accounts that need a login](#accounts-that-need-a-login) — throwaway account and cookies, in full
 - [What it cannot tell you](#what-it-cannot-tell-you)
-- [Limits and roadmap](LIMITATIONS.md)
+- [Roadmap](#roadmap)
+- [Limits and roadmap (technical)](LIMITATIONS.md)
 - [What can break, and how to check it](SURFACES.md)
 - [Please use this well](#please-use-this-well)
 - [Credits](#credits) · [Contact](#contact) · [Licence](#licence)
@@ -368,6 +403,24 @@ substituting a proxy and hoping you do not notice.
 
 There is a fuller accounting in **[LIMITATIONS.md](LIMITATIONS.md)** —
 including what is simply not built yet, and what it would take to fix each one.
+
+Separately, and simpler: **Raven reads captions, not the video itself.** What's
+actually said or shown on screen isn't analysed yet, so a strong visual post
+with a thin caption won't get full credit. See LIMITATIONS.md for the detail.
+
+---
+
+## Roadmap
+
+- **More platforms.** Instagram, YouTube, X, LinkedIn and others — same job
+  Raven already does on TikTok, applied to wherever the account actually is.
+- **Reading the video itself**, not just the caption underneath it.
+- **More skills**, each covering another piece of running a business without
+  a team — the rest of marketing first, then beyond it.
+
+[LIMITATIONS.md](LIMITATIONS.md) has the nearer-term, technical version of
+this list — the three fixes worth making first, in the tool as it exists
+today.
 
 ---
 
