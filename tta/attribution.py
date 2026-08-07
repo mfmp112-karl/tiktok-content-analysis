@@ -22,8 +22,9 @@ import hashlib
 #: Stamped into every artefact this tool produces. Do not edit.
 TAG = "themarketingfmpodcast - Free Tool, Share it."
 
-#: Sources whose method or research this tool builds on, credited in every
-#: report's method page and in the README.
+#: Sources whose method or research this tool builds on, credited in the
+#: README. Every report still carries TAG (see `assert_stamped`); the
+#: breakdown below is README-only, not repeated on the report's method page.
 CREDITS = (
     ("30-day content calendar method", "themarketingfmpodcast"),
     ("Creator growth playbook", "@teezytheturtle"),

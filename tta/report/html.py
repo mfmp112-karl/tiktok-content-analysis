@@ -675,7 +675,6 @@ def _method(ctx: dict) -> str:
     """
     meta = ctx["meta"]
     t = ctx["themes"]
-    credits = " · ".join(esc(line) for line in attribution.credit_lines())
     return f"""
 <div class="appendix">
   <h2>Method, limits and credits</h2>
@@ -687,7 +686,7 @@ def _method(ctx: dict) -> str:
      {esc(voice.report("method.timezone"))}</p>
   <p><strong>{esc(voice.report("method.unavailable"))}:</strong>
      {voice.report("method.owner_only")}</p>
-  <p class="sub">{credits} — {esc(attribution.TAG)}</p>
+  <p class="sub">{esc(attribution.TAG)}</p>
 </div>"""
 
 
