@@ -360,6 +360,74 @@ def _normalise(data: dict) -> dict:
     return out
 
 
+#: A browser UA and nothing else. This is a plain, unauthenticated GET — it
+#: exists to catch the free cases, not to imitate a real session.
+_HTML_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                 "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+
+
+def profile_via_html(handle: str, *, timeout: int = 15) -> dict | None:
+    """Try to read a profile without a browser at all, before asking camofox.
+
+    TikTok server-renders the exact same `__UNIVERSAL_DATA_FOR_REHYDRATION__`
+    payload `PROFILE_JS`'s hydration branch reads out of the live DOM into the
+    *plain HTML* for a real fraction of requests — verified live 2026-08-07
+    against @toneendungu: a correct follower count with no browser process
+    running at all. When it lands, this is a free substitute for a whole
+    camofox round-trip, and it costs nothing to try first.
+
+    **It is not reliable on its own — do not treat a `None` here as "no
+    data," only as "try camofox next."** The same URL, same headers, seconds
+    apart, hit and then missed for the same account (@gilana.chronicles,
+    2026-08-07): TikTok ships a client-render-only shell for some slice of
+    requests, non-deterministically. Repeated automated hits from one source
+    plausibly make that worse over time — the same pressure Camoufox's
+    fingerprint spoofing exists to survive — so this is one look, not a
+    retry loop; callers should not call it more than once per profile read.
+
+    Shares the walled-account blind spot documented on `PROFILE_JS`: a page
+    can ship `userInfo` with empty stats and no "audience controls" text
+    anywhere in the static HTML, which reads identically to "shell, not
+    landed" here. That is fine for this function's job — a plain reader with
+    no session was never going to get past a login wall anyway — but it means
+    a `None` from here says nothing about *why*, and the camofox fallback's
+    walled-detection is still the source of truth for that.
+    """
+    url = f"https://www.tiktok.com/@{handle.lstrip('@').lower()}"
+    req = urllib.request.Request(url, headers=_HTML_HEADERS)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            html = resp.read().decode("utf-8", "replace")
+    except Exception:
+        return None
+    m = re.search(
+        r'<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__"[^>]*>(.*?)</script>',
+        html, re.S)
+    if not m:
+        return None
+    try:
+        scope = json.loads(m.group(1))["__DEFAULT_SCOPE__"]
+        d = scope["webapp.user-detail"]
+        u, s = d["userInfo"]["user"], d["userInfo"].get("stats") or {}
+    except (KeyError, TypeError, ValueError):
+        return None
+    followers = s.get("followerCount")
+    if followers is None:
+        return None
+    return _normalise({
+        "ready": True, "source": "hydration-http", "walled": False,
+        "handle": u.get("uniqueId"), "nickname": u.get("nickname"),
+        "bio": u.get("signature", ""), "link": (u.get("bioLink") or {}).get("link", ""),
+        "avatar": u.get("avatarLarger") or u.get("avatarMedium") or "",
+        "verified": bool(u.get("verified")), "private": bool(u.get("privateAccount")),
+        "followers": followers, "following": s.get("followingCount"),
+        "hearts": s.get("heartCount"), "videos": s.get("videoCount"),
+    })
+
+
 def profile(handle: str, *, log=print) -> dict | None:
     """Read a profile's header straight out of the page's hydration payload.
 

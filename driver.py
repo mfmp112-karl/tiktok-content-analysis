@@ -314,11 +314,20 @@ def read_profile(conn, handle: str, enabled: bool) -> dict | None:
     if not enabled:
         print("  skipped (--no-profile)")
         return None
-    if not camofox.healthy():
-        print("  camofox not running — follower count and profile audit "
-              "will be missing from the report")
-        return None
-    data = camofox.profile(handle)
+    # Free when it lands, and it costs one quick request to find out — try it
+    # before asking anything of camofox at all. Not reliable enough to trust
+    # a miss from (see profile_via_html's docstring), so a miss here changes
+    # nothing about what happens next.
+    data = camofox.profile_via_html(handle)
+    if data:
+        print(f"  @{handle}: {data.get('followers')} followers, plain HTML, "
+              f"no browser needed")
+    elif camofox.healthy():
+        data = camofox.profile(handle)
+    else:
+        print("  camofox not running, and TikTok did not serve the plain "
+              "page this time — follower count and profile audit will be "
+              "missing from the report")
     if not data:
         return None
     print(f"  @{handle}: {data.get('followers')} followers, "

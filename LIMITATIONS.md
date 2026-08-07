@@ -160,9 +160,31 @@ of what comes back, so breakage is detected rather than discovered.
 enumeration passes and scroll-until-stagnant on browser pages, but no backoff,
 no quota, and no guard against someone analysing fifty accounts in a loop.
 
-**camofox is fragile.** It restarts its browser mid-session, cold-starts past its
-own timeout, and cannot produce a PDF at all. All three are handled, none are
-fixed.
+**camofox restarted on a loop — root cause found and fixed (2026-08-07).**
+The `~/.camofox-browser` server was restarting its browser every ~176 seconds,
+even with zero active sessions, on `Protocol error
+(Browser.setDefaultViewport): Found property ".viewport.isMobile" - false
+which is not described in this scheme`. Cause: the local install had resolved
+`playwright-core` to `1.61.1`, which sends an `isMobile` field the bundled
+Juggler protocol schema doesn't recognise — upstream (`jo-inc/camofox-browser`)
+declares `playwright-core: ^1.58.0`, a caret range that floats forward and let
+`npm install` pick up an incompatible newer version. Fix: pinned
+`playwright-core` to an exact `1.58.1` in `~/.camofox-browser/package.json`
+and did a clean `node_modules`/lockfile reinstall so the pin actually resolves
+(a caret pin alone doesn't hold). Verified: `node -p
+"require('playwright-core/package.json').version"` reports `1.58.1`;
+`server.log` ran 4.5+ minutes past the old restart interval with zero
+`isMobile`/`restarting browser` lines; `driver.py --selftest` and a direct
+`camofox.profile('sidneynyaga')` call both completed via the real browser path
+(`"source":"dom"`) with no restart. This is a fix to the external
+camofox-browser install, not to this repo — it will drift back if that
+install's `node_modules` is ever wiped and reinstalled without the pin.
+
+The profile read also tries a plain, browser-free HTTP fetch first
+(`camofox.profile_via_html`) — TikTok server-renders the same hydration JSON
+into the static page for a real fraction of requests, so a hit skips camofox
+entirely. This stays as a genuine reliability layer independent of the fix
+above, since it avoids the browser round-trip even when camofox is healthy.
 
 **No CI**, no packaging, no release process. Installation is `git clone` plus
 two pip packages, which is the right trade for now but means updates are manual.
